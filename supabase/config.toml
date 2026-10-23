@@ -1,0 +1,7 @@
+project_id = "airsense"
+
+[functions.ingest-reading]
+verify_jwt = false
+
+[functions.send-reading-email]
+verify_jwt = true
