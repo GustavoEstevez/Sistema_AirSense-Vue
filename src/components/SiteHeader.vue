@@ -1,17 +1,17 @@
 <script setup>
 import { ref } from 'vue'
 import { useRoute } from 'vue-router'
+import QuoteModal from './QuoteModal.vue'
 
 const route = useRoute()
 const menuOpen = ref(false)
+const showQuoteModal = ref(false)
 
 const links = [
-  { to: '/inicio/', label: 'Inicio' },
-  { to: '/', label: 'AirSense AI', badge: 'Nuevo' },
-  { to: '/clasico/', label: 'Classic' },
-  { to: '/dashboard/', label: 'Dashboard' },
-  { to: '/documentacion/', label: 'Documentación' },
-  { to: '/galeria/', label: 'Galería' },
+  { to: '/', label: 'Inicio' },
+  { to: '/hardware/', label: 'Tecnología' },
+  { to: '/documentacion/', label: 'Funcionamiento' },
+  { to: '/instalaciones/', label: 'Despliegues' },
 ]
 
 function isActive(path) {
@@ -22,11 +22,11 @@ function isActive(path) {
 <template>
   <header class="site-header">
     <div class="nav-wrap">
-      <RouterLink to="/" class="brand" aria-label="AirSense, inicio" @click="menuOpen = false">
-        <img src="/assets/Logos/LogoAirSense.png" alt="" />
+      <RouterLink to="/" class="brand" aria-label="AirSense Enterprise" @click="menuOpen = false">
+        <img src="/assets/Logos/LogoAirSense.png" alt="Logo AirSense" />
         <span>
-          <strong>Air<span>Sense</span></strong>
-          <small>Monitoreo ambiental inteligente</small>
+          <strong>Air<span>Sense</span>™</strong>
+          <small>Monitoreo Ambiental Corporativo</small>
         </span>
       </RouterLink>
 
@@ -48,13 +48,32 @@ function isActive(path) {
           :class="{ active: isActive(link.to) }"
           @click="menuOpen = false"
         >
-          <small v-if="link.badge">{{ link.badge }}</small>{{ link.label }}
+          {{ link.label }}
         </RouterLink>
+
+        <!-- CTA in mobile menu -->
+        <button
+          type="button"
+          class="header-cta-btn mobile-only"
+          @click="menuOpen = false; showQuoteModal = true"
+        >
+          Cotización Personalizada
+        </button>
       </nav>
 
-      <RouterLink to="/dashboard/" class="live-link">
-        <span></span> En vivo
-      </RouterLink>
+      <!-- Desktop corporate quote CTA -->
+      <div class="header-actions desktop-only">
+        <button
+          type="button"
+          class="header-cta-btn"
+          @click="showQuoteModal = true"
+        >
+          Cotización Personalizada →
+        </button>
+      </div>
     </div>
+
+    <!-- Quote Modal -->
+    <QuoteModal :show="showQuoteModal" @close="showQuoteModal = false" />
   </header>
 </template>

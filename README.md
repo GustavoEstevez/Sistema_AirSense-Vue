@@ -46,14 +46,18 @@ La migración crea `sensor_readings`, habilita RLS y permite únicamente lectura
 supabase secrets set AIRSENSE_DEVICE_KEY="UNA_CLAVE_LARGA_Y_ALEATORIA"
 supabase secrets set RESEND_API_KEY="re_..."
 supabase secrets set AIRSENSE_ALERT_EMAIL="destino@ejemplo.com"
+supabase secrets set AIRSENSE_SALES_EMAIL="ventas@tu-dominio.com"
 supabase secrets set AIRSENSE_RESEND_FROM="AirSense <alertas@tu-dominio.com>"
 supabase secrets set ALLOWED_ORIGIN="https://tu-sitio.com"
 
 supabase functions deploy ingest-reading --no-verify-jwt
 supabase functions deploy send-reading-email
+supabase functions deploy send-quote-email
 ```
 
-`ingest-reading` no verifica JWT porque el ESP32 no inicia sesión, pero exige el encabezado privado `x-device-key`. `send-reading-email` sí exige el token anon que adjunta el cliente de Supabase y limita envíos repetidos.
+`ingest-reading` no verifica JWT porque el ESP32 no inicia sesión, pero exige el encabezado privado `x-device-key`. `send-reading-email` y `send-quote-email` sí exigen el token anon que adjunta el cliente de Supabase.
+
+`send-quote-email` envía al solicitante un correo de confirmación cuando completa el formulario de cotización y, si `AIRSENSE_SALES_EMAIL` está configurado, notifica también al equipo comercial. `AIRSENSE_SALES_EMAIL` es opcional: si falta, se usa `AIRSENSE_ALERT_EMAIL`.
 
 Mientras probás Resend sin dominio verificado podés usar `AirSense <onboarding@resend.dev>` como remitente, con las restricciones que imponga Resend.
 

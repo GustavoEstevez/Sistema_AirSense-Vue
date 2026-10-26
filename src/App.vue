@@ -7,13 +7,13 @@ import SiteFooter from './components/SiteFooter.vue'
 const route = useRoute()
 
 function updateTitle() {
-  document.title = route.meta.title ? `${route.meta.title} · AirSense` : 'AirSense'
+  document.title = route.meta.title ? `${route.meta.title} · AirSense Enterprise` : 'AirSense Enterprise'
 }
 
 onMounted(updateTitle)
 watch(() => route.fullPath, () => {
   updateTitle()
-  window.scrollTo({ top: 0, behavior: 'instant' })
+  if (!route.hash) window.scrollTo({ top: 0, behavior: 'instant' })
 })
 </script>
 

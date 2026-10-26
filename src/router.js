@@ -1,15 +1,19 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from './views/HomeView.vue'
+import ProductView from './views/ProductView.vue'
 
 const router = createRouter({
   history: createWebHistory(),
+  scrollBehavior(to, from, savedPosition) {
+    if (savedPosition) return savedPosition
+    if (to.hash) return { el: to.hash, top: 100, behavior: 'smooth' }
+    return { top: 0 }
+  },
   routes: [
-    { path: '/', name: 'ai', component: HomeView, meta: { title: 'AirSense AI' } },
-    { path: '/inicio/', name: 'inicio', component: () => import('./views/StoryView.vue'), meta: { title: 'El proyecto' } },
-    { path: '/clasico/', name: 'clasico', component: () => import('./views/ClassicView.vue'), meta: { title: 'AirSense Classic' } },
-    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard en vivo' } },
-    { path: '/documentacion/', name: 'documentacion', component: () => import('./views/DocumentationView.vue'), meta: { title: 'Documentación' } },
-    { path: '/galeria/', name: 'galeria', component: () => import('./views/GalleryView.vue'), meta: { title: 'Galería' } },
+    { path: '/', name: 'producto', component: ProductView, meta: { title: 'AirSense Pro · Solución de Monitoreo Ambiental Corporativo' } },
+    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Consola de Telemetría' } },
+    { path: '/hardware/', alias: '/clasico/', name: 'hardware', component: () => import('./views/ClassicView.vue'), meta: { title: 'Tecnología' } },
+    { path: '/documentacion/', name: 'documentacion', component: () => import('./views/DocumentationView.vue'), meta: { title: 'Funcionamiento & Integración IT' } },
+    { path: '/instalaciones/', alias: '/galeria/', name: 'instalaciones', component: () => import('./views/GalleryView.vue'), meta: { title: 'Instalaciones y Despliegues' } },
     { path: '/:pathMatch(.*)*', redirect: '/' },
   ],
 })

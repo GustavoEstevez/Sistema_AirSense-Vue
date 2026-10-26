@@ -5,3 +5,6 @@ verify_jwt = false
 
 [functions.send-reading-email]
 verify_jwt = true
+
+[functions.send-quote-email]
+verify_jwt = true
