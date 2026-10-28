@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue'
+import { onBeforeUnmount, onMounted, ref } from 'vue'
 import QuoteModal from '../components/QuoteModal.vue'
 
 const showQuote = ref(false)
@@ -19,6 +19,13 @@ const photos = [
   ['primera instancia/IMG-20260609-WA0025.jpg', 'Puesta en marcha y verificación'],
 ]
 const selected = ref(null)
+
+function closeOnEscape(event) {
+  if (event.key === 'Escape') selected.value = null
+}
+
+onMounted(() => window.addEventListener('keydown', closeOnEscape))
+onBeforeUnmount(() => window.removeEventListener('keydown', closeOnEscape))
 </script>
 
 <template>

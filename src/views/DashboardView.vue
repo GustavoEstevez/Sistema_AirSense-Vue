@@ -48,7 +48,9 @@ function getTrend(field) {
 
 function formatDate(date) {
   if (!date) return 'Aguardando telemetría'
-  return new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'medium' }).format(new Date(date))
+  const parsed = new Date(date)
+  if (Number.isNaN(parsed.getTime())) return 'Fecha de telemetría no válida'
+  return new Intl.DateTimeFormat('es-AR', { dateStyle: 'short', timeStyle: 'medium' }).format(parsed)
 }
 
 async function sendEmail() {
@@ -67,15 +69,18 @@ async function sendEmail() {
     return
   }
   sending.value = true
-  const { error: functionError } = await supabase.functions.invoke('send-reading-email', {
-    body: { email: email.value, readingId: latest.value.id },
-  })
-  sending.value = false
-  if (functionError) emailMessage.value = functionError.message || 'No se pudo despachar el informe corporativo.'
-  else {
+  try {
+    const { error: functionError } = await supabase.functions.invoke('send-reading-email', {
+      body: { email: email.value, readingId: latest.value.id },
+    })
+    if (functionError) throw functionError
     emailSuccess.value = true
     emailMessage.value = 'Informe de auditoría despachado correctamente por la Edge Function.'
     email.value = ''
+  } catch (sendError) {
+    emailMessage.value = sendError?.message || 'No se pudo despachar el informe corporativo. Intentá nuevamente.'
+  } finally {
+    sending.value = false
   }
 }
 </script>
@@ -188,7 +193,7 @@ async function sendEmail() {
             <small :class="{ success: emailSuccess }" role="status">{{ emailMessage }}</small>
           </form>
           <div class="security-stamp">
-            <span>Procesado mediante Supabase Edge Functions con entrega segura vía Resend.</span>
+            <span>Procesado mediante Supabase Edge Functions con entrega segura vía Gmail SMTP.</span>
           </div>
         </article>
       </div>

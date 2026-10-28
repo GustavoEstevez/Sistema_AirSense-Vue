@@ -1,4 +1,4 @@
-import { adminClient, corsHeaders, json, sendWithResend, sha256 } from '../_shared/airsense.ts'
+import { adminClient, corsHeaders, json, sendReadingEmail, sha256 } from '../_shared/airsense.ts'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -30,7 +30,7 @@ Deno.serve(async (request) => {
     if (!claimId) return json(request, { error: 'Esperá un minuto antes de volver a enviar.' }, 429)
 
     try {
-      const providerId = await sendWithResend(recipient, reading, false)
+      const providerId = await sendReadingEmail(recipient, reading, false)
       await supabase.from('email_dispatches').update({ status: 'sent', provider_id: providerId }).eq('id', claimId)
       return json(request, { ok: true })
     } catch (mailError) {

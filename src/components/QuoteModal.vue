@@ -1,5 +1,6 @@
 <script setup>
-import { ref, watch } from 'vue'
+import { nextTick, onBeforeUnmount, ref, watch } from 'vue'
+import { supabase, supabaseConfigured } from '../lib/supabase'
 
 const props = defineProps({
   show: { type: Boolean, default: false },
@@ -19,6 +20,8 @@ const form = ref({
 const submitted = ref(false)
 const loading = ref(false)
 const errorMessage = ref('')
+const modal = ref(null)
+let previousOverflow = ''
 
 async function errorDetail(error) {
   const context = error?.context
@@ -43,7 +46,6 @@ async function submitQuote() {
   errorMessage.value = ''
   loading.value = true
   try {
-    const { supabase, supabaseConfigured } = await import('../lib/supabase')
     if (!supabaseConfigured || !supabase) {
       throw new Error('El servicio de correo no está configurado. Escribinos a ventas@airsense.com.')
     }
@@ -70,20 +72,39 @@ function resetAndClose() {
   emit('close')
 }
 
-watch(() => props.show, (visible) => {
-  if (visible) errorMessage.value = ''
+function onKeydown(event) {
+  if (event.key === 'Escape' && props.show && !loading.value) resetAndClose()
+}
+
+watch(() => props.show, async (visible) => {
+  if (visible) {
+    errorMessage.value = ''
+    previousOverflow = document.body.style.overflow
+    document.body.style.overflow = 'hidden'
+    window.addEventListener('keydown', onKeydown)
+    await nextTick()
+    modal.value?.querySelector('input, button')?.focus()
+  } else {
+    document.body.style.overflow = previousOverflow
+    window.removeEventListener('keydown', onKeydown)
+  }
+})
+
+onBeforeUnmount(() => {
+  document.body.style.overflow = previousOverflow
+  window.removeEventListener('keydown', onKeydown)
 })
 </script>
 
 <template>
   <Teleport to="body">
-    <div v-if="show" class="quote-modal-overlay" role="dialog" aria-modal="true" @click.self="resetAndClose">
-      <div class="quote-modal panel">
+    <div v-if="show" class="quote-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="quote-modal-title" @click.self="resetAndClose">
+      <div ref="modal" class="quote-modal panel" tabindex="-1">
         <button type="button" class="close-btn" aria-label="Cerrar modal" @click="resetAndClose">×</button>
 
         <div v-if="submitted" class="quote-success">
           <div class="success-icon">✓</div>
-          <h3>¡Solicitud recibida con éxito!</h3>
+          <h3 id="quote-modal-title">¡Solicitud recibida con éxito!</h3>
           <p>
             Gracias por tu interés en <strong>AirSense™ Enterprise</strong>. Enviamos una confirmación a
             <code>{{ form.email }}</code> y nuestro equipo de ventas corporativas se comunicará con
@@ -100,7 +121,7 @@ watch(() => props.show, (visible) => {
 
         <div v-else>
           <span class="eyebrow dark" style="margin-bottom: 12px;">COTIZACIÓN PERSONALIZADA</span>
-          <h2>Solicitar Cotización Corporativa</h2>
+          <h2 id="quote-modal-title">Solicitar Cotización Corporativa</h2>
           <p class="modal-sub">
             Equipá tus oficinas, salas de reuniones o plantas industriales con telemetría ambiental en tiempo real.
           </p>

@@ -57,7 +57,7 @@ const standards = [
           <div class="architecture">
             <b>ESP32</b><i>→</i><b>Edge Function</b><i>→</i><b>Postgres</b><i>→</i><b>Realtime</b><i>→</i><b>Vue</b>
           </div>
-          <p>Los informes ejecutivos se generan y envían desde Edge Functions mediante Resend. Ninguna clave privada se expone en el navegador.</p>
+          <p>Los informes ejecutivos se generan en Edge Functions y se entregan mediante Gmail SMTP con TLS. Ninguna credencial privada se expone en el navegador.</p>
         </section>
 
         <section id="seguridad" class="doc-section">
@@ -127,9 +127,9 @@ const standards = [
           <span>06</span>
           <h2>Documentación corporativa</h2>
           <div class="download-grid">
-            <a href="/assets/documentacion.pdf" target="_blank"><b>PDF</b><span>Funcionamiento del sistema</span></a>
-            <a href="/assets/hardware.pdf" target="_blank"><b>PDF</b><span>Hardware y arquitectura</span></a>
-            <a href="/assets/instalaciones.pdf" target="_blank"><b>PDF</b><span>Instalaciones y despliegues</span></a>
+            <a href="/assets/documentacion.pdf" target="_blank" rel="noopener"><b>PDF</b><span>Funcionamiento del sistema</span></a>
+            <a href="/assets/hardware.pdf" target="_blank" rel="noopener"><b>PDF</b><span>Hardware y arquitectura</span></a>
+            <a href="/assets/instalaciones.pdf" target="_blank" rel="noopener"><b>PDF</b><span>Instalaciones y despliegues</span></a>
           </div>
 
         </section>

@@ -36,14 +36,20 @@ export function useReadings() {
       return
     }
     loading.value = true
-    const { data, error: queryError } = await supabase
-      .from('sensor_readings')
-      .select('id, temperature, humidity, noise, co2, recorded_at')
-      .order('recorded_at', { ascending: false })
-      .limit(60)
-    if (queryError) error.value = queryError.message
-    else readings.value = [...data].reverse()
-    loading.value = false
+    error.value = ''
+    try {
+      const { data, error: queryError } = await supabase
+        .from('sensor_readings')
+        .select('id, temperature, humidity, noise, co2, recorded_at')
+        .order('recorded_at', { ascending: false })
+        .limit(60)
+      if (queryError) throw queryError
+      readings.value = [...(data ?? [])].reverse()
+    } catch (loadError) {
+      error.value = loadError?.message || 'No se pudieron recuperar las lecturas.'
+    } finally {
+      loading.value = false
+    }
   }
 
   function subscribe() {
