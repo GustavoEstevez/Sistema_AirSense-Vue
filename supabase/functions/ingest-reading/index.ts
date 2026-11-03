@@ -4,7 +4,7 @@ import {
   isDanger,
   json,
   parseReading,
-  sendWithResend,
+  sendReadingEmail,
   sha256,
 } from '../_shared/airsense.ts'
 
@@ -40,7 +40,7 @@ Deno.serve(async (request) => {
       if (claimError) throw claimError
       if (claimId) {
         try {
-          const providerId = await sendWithResend(recipient, saved, true)
+          const providerId = await sendReadingEmail(recipient, saved, true)
           await supabase.from('email_dispatches').update({ status: 'sent', provider_id: providerId }).eq('id', claimId)
           alertSent = true
         } catch (mailError) {

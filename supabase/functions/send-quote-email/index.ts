@@ -1,4 +1,4 @@
-import { corsHeaders, json } from '../_shared/airsense.ts'
+import { adminClient, corsHeaders, json, sendMail, sha256 } from '../_shared/airsense.ts'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -62,23 +62,7 @@ function salesHtml(quote: QuoteRequest) {
 }
 
 async function sendEmail(to: string, subject: string, html: string, replyTo?: string) {
-  const apiKey = Deno.env.get('RESEND_API_KEY')
-  if (!apiKey) throw new Error('Falta configurar RESEND_API_KEY.')
-  const from = Deno.env.get('AIRSENSE_RESEND_FROM') || 'AirSense <onboarding@resend.dev>'
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject,
-      html,
-      ...(replyTo ? { reply_to: replyTo } : {}),
-    }),
-  })
-  const result = await response.json()
-  if (!response.ok) throw new Error(result?.message || 'Resend rechazó el envío.')
-  return result.id as string
+  return sendMail({ to, subject, html, replyTo })
 }
 
 Deno.serve(async (request) => {
@@ -87,12 +71,28 @@ Deno.serve(async (request) => {
 
   try {
     const quote = parseQuote(await request.json())
+    const supabase = adminClient()
+    const recipientHash = await sha256(quote.email)
+    const { data: claimId, error: claimError } = await supabase.rpc('claim_email_dispatch', {
+      p_kind: 'quote_confirmation',
+      p_recipient_hash: recipientHash,
+      p_reading_id: null,
+      p_cooldown_seconds: 60,
+    })
+    if (claimError) throw claimError
+    if (!claimId) return json(request, { error: 'Esperá un minuto antes de volver a enviar.' }, 429)
 
-    await sendEmail(
-      quote.email,
-      'Recibimos tu solicitud de cotización — AirSense Enterprise',
-      confirmationHtml(quote),
-    )
+    try {
+      const providerId = await sendEmail(
+        quote.email,
+        'Recibimos tu solicitud de cotización — AirSense Enterprise',
+        confirmationHtml(quote),
+      )
+      await supabase.from('email_dispatches').update({ status: 'sent', provider_id: providerId }).eq('id', claimId)
+    } catch (mailError) {
+      await supabase.from('email_dispatches').update({ status: 'failed' }).eq('id', claimId)
+      throw mailError
+    }
 
     const salesEmail = Deno.env.get('AIRSENSE_SALES_EMAIL') || Deno.env.get('AIRSENSE_ALERT_EMAIL')
     if (salesEmail && EMAIL.test(salesEmail)) {

@@ -1,9 +1,12 @@
 <script setup>
 import { ref } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import QuoteModal from './QuoteModal.vue'
+import { useAuth } from '../composables/useAuth'
 
 const route = useRoute()
+const router = useRouter()
+const auth = useAuth()
 const menuOpen = ref(false)
 const showQuoteModal = ref(false)
 
@@ -16,6 +19,12 @@ const links = [
 
 function isActive(path) {
   return path === '/' ? route.path === '/' : route.path.startsWith(path)
+}
+
+async function leave() {
+  await auth.signOut()
+  menuOpen.value = false
+  await router.push('/')
 }
 </script>
 
@@ -51,6 +60,12 @@ function isActive(path) {
           {{ link.label }}
         </RouterLink>
 
+        <RouterLink v-if="auth.isAuthenticated.value" to="/dashboard/" :class="{ active: isActive('/dashboard/') }" @click="menuOpen = false">Dashboard</RouterLink>
+        <RouterLink v-if="auth.isAdmin.value" to="/admin/usuarios/" :class="{ active: isActive('/admin/') }" @click="menuOpen = false">Usuarios</RouterLink>
+        <RouterLink v-if="auth.isAuthenticated.value" to="/panel/" class="mobile-only account-mobile-link" @click="menuOpen = false">Mi perfil</RouterLink>
+        <RouterLink v-else to="/cuenta/ingresar/" class="mobile-only account-mobile-link" @click="menuOpen = false">Iniciar sesión</RouterLink>
+        <button v-if="auth.isAuthenticated.value" type="button" class="mobile-only account-mobile-link" @click="leave">Cerrar sesión</button>
+
         <!-- CTA in mobile menu -->
         <button
           type="button"
@@ -63,6 +78,10 @@ function isActive(path) {
 
       <!-- Desktop corporate quote CTA -->
       <div class="header-actions desktop-only">
+        <RouterLink v-if="auth.isAuthenticated.value" to="/panel/" class="account-link" aria-label="Abrir mi perfil">
+          {{ auth.profile.value?.first_name || 'Mi cuenta' }}
+        </RouterLink>
+        <RouterLink v-else to="/cuenta/ingresar/" class="account-link">Ingresar</RouterLink>
         <button
           type="button"
           class="header-cta-btn"

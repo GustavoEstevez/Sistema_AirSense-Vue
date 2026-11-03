@@ -1,4 +1,6 @@
 import { createClient } from 'npm:@supabase/supabase-js@2'
+// @ts-types="npm:@types/nodemailer@6.4.17"
+import nodemailer from 'npm:nodemailer@6.9.16'
 
 export type Reading = {
   id?: string
@@ -76,21 +78,39 @@ export function emailHtml(reading: Reading, alert: boolean) {
   return `<!doctype html><html><body style="margin:0;background:#eef8f8;font-family:Arial,sans-serif;color:#082f3a"><div style="max-width:560px;margin:30px auto;padding:28px;background:#fff;border:1px solid #cfe5e6;border-radius:18px"><p style="margin:0 0 8px;color:#088395;font-size:12px;font-weight:700;letter-spacing:1.5px">AIRSENSE</p><h1 style="margin:0;font-size:26px">${title}</h1><p style="color:#52727b;line-height:1.6">${lead}</p><table style="width:100%;border-collapse:collapse;border-top:1px solid #dcebec;border-bottom:1px solid #dcebec">${metricRow('Temperatura', reading.temperature, '°C')}${metricRow('Humedad', reading.humidity, '%')}${metricRow('Ruido', reading.noise, 'dB')}${metricRow('CO₂', reading.co2, 'ppm')}</table><p style="margin-top:20px;color:#78949b;font-size:12px">Medición: ${new Date(reading.recorded_at || Date.now()).toLocaleString('es-AR', { timeZone: 'America/Argentina/Buenos_Aires' })}</p></div></body></html>`
 }
 
-export async function sendWithResend(to: string, reading: Reading, alert: boolean) {
-  const apiKey = Deno.env.get('RESEND_API_KEY')
-  if (!apiKey) throw new Error('Falta configurar RESEND_API_KEY.')
-  const from = Deno.env.get('AIRSENSE_RESEND_FROM') || 'AirSense <onboarding@resend.dev>'
-  const response = await fetch('https://api.resend.com/emails', {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${apiKey}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      from,
-      to: [to],
-      subject: alert ? '⚠️ AirSense detectó un ambiente no saludable' : 'Tu lectura actual de AirSense',
-      html: emailHtml(reading, alert),
-    }),
+export async function sendMail(options: { to: string; subject: string; html: string; replyTo?: string }) {
+  const host = Deno.env.get('SMTP_HOST') || 'smtp.gmail.com'
+  const port = Number(Deno.env.get('SMTP_PORT') || 465)
+  const user = Deno.env.get('SMTP_USER')?.trim()
+  const pass = Deno.env.get('SMTP_PASS')?.replaceAll(' ', '')
+  const from = Deno.env.get('SMTP_FROM')?.trim() || user
+  const senderName = Deno.env.get('SMTP_SENDER_NAME')?.trim() || 'AirSense'
+  if (!user || !pass || !from) throw new Error('El servidor SMTP no está configurado.')
+
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+    tls: { minVersion: 'TLSv1.2', servername: host },
+    connectionTimeout: 15_000,
+    greetingTimeout: 15_000,
+    socketTimeout: 30_000,
   })
-  const result = await response.json()
-  if (!response.ok) throw new Error(result?.message || 'Resend rechazó el envío.')
-  return result.id as string
+  const result = await transporter.sendMail({
+    from: { name: senderName, address: from },
+    to: options.to,
+    subject: options.subject,
+    html: options.html,
+    ...(options.replyTo ? { replyTo: options.replyTo } : {}),
+  })
+  return result.messageId as string
+}
+
+export function sendReadingEmail(to: string, reading: Reading, alert: boolean) {
+  return sendMail({
+    to,
+    subject: alert ? '⚠️ AirSense detectó un ambiente no saludable' : 'Tu lectura actual de AirSense',
+    html: emailHtml(reading, alert),
+  })
 }

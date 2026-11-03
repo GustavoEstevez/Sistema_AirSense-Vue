@@ -8,3 +8,6 @@ verify_jwt = true
 
 [functions.send-quote-email]
 verify_jwt = true
+
+[functions.admin-users]
+verify_jwt = true

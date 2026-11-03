@@ -13,7 +13,7 @@ function updateTitle() {
 onMounted(updateTitle)
 watch(() => route.fullPath, () => {
   updateTitle()
-  if (!route.hash) window.scrollTo({ top: 0, behavior: 'instant' })
+  if (!route.hash) window.scrollTo({ top: 0, behavior: 'auto' })
 })
 </script>
 
