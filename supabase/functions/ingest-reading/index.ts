@@ -1,25 +1,55 @@
 import {
   adminClient,
-  corsHeaders,
+  constantTimeEqual,
+  HttpError,
   isDanger,
   json,
+  parseDeviceStatus,
   parseReading,
+  preflight,
+  rateLimit,
+  readJsonBody,
+  recordSecurityEvent,
+  requestAddress,
   sendReadingEmail,
   sha256,
 } from '../_shared/airsense.ts'
 
 Deno.serve(async (request) => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(request) })
+  if (request.method === 'OPTIONS') return preflight(request)
   if (request.method !== 'POST') return json(request, { error: 'Método no permitido.' }, 405)
 
   const configuredKey = Deno.env.get('AIRSENSE_DEVICE_KEY') || ''
   const suppliedKey = request.headers.get('x-device-key') || ''
-  if (!configuredKey || suppliedKey !== configuredKey) return json(request, { error: 'Dispositivo no autorizado.' }, 401)
+  if (!configuredKey || !suppliedKey || !await constantTimeEqual(suppliedKey, configuredKey)) {
+    await recordSecurityEvent('ingest.authentication_failed', request, { severity: 'critical' })
+    return json(request, { error: 'Dispositivo no autorizado.' }, 401)
+  }
 
   try {
-    const payload = await request.json()
+    const source = requestAddress(request)
+    if (!await rateLimit('ingest:device', suppliedKey, 120, 60)
+      || !await rateLimit('ingest:source', source, 240, 60)) {
+      await recordSecurityEvent('ingest.rate_limited', request, { severity: 'critical' })
+      throw new HttpError(429, 'El dispositivo superó el límite de lecturas.')
+    }
+    const payload = await readJsonBody<Record<string, unknown>>(request, 4096)
     const reading = parseReading(payload)
+    const deviceStatus = parseDeviceStatus(payload)
     const supabase = adminClient()
+    const { error: deviceError } = await supabase
+      .from('devices')
+      .upsert({ id: reading.device_id }, { onConflict: 'id', ignoreDuplicates: true })
+    if (deviceError) throw deviceError
+    const { error: statusError } = await supabase
+      .from('devices')
+      .update({
+        ...deviceStatus,
+        last_seen_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      })
+      .eq('id', reading.device_id)
+    if (statusError) throw statusError
     const { data: saved, error } = await supabase
       .from('sensor_readings')
       .insert(reading)
@@ -53,6 +83,7 @@ Deno.serve(async (request) => {
   } catch (error) {
     console.error(error)
     const message = error instanceof Error ? error.message : 'No se pudo procesar la lectura.'
-    return json(request, { error: message }, message.includes('inválida') ? 400 : 500)
+    const status = error instanceof HttpError ? error.status : message.includes('inválida') ? 400 : 500
+    return json(request, { error: message }, status)
   }
 })

@@ -1,4 +1,14 @@
-import { adminClient, corsHeaders, json } from '../_shared/airsense.ts'
+import {
+  adminClient,
+  HttpError,
+  json,
+  preflight,
+  rateLimit,
+  readJsonBody,
+  recordSecurityEvent,
+  requireAal2,
+  requireUser,
+} from '../_shared/airsense.ts'
 
 const VALID_STATUS = new Set(['active', 'inactive'])
 const PAGE_SIZE_MAX = 100
@@ -8,18 +18,9 @@ function clean(value: unknown, max = 160) {
 }
 
 async function requireAdmin(request: Request) {
-  const authorization = request.headers.get('authorization') || ''
-  const token = authorization.replace(/^Bearer\s+/i, '').trim()
-  if (!token) throw new Error('AUTH_REQUIRED')
-  const admin = adminClient()
-  const { data: { user }, error } = await admin.auth.getUser(token)
-  if (error || !user) throw new Error('AUTH_REQUIRED')
-  const { data: profile } = await admin
-    .from('profiles')
-    .select('id, role_slug, status')
-    .eq('id', user.id)
-    .maybeSingle()
-  if (!profile || profile.status !== 'active' || profile.role_slug !== 'admin') throw new Error('FORBIDDEN')
+  const { admin, user, profile, token } = await requireUser(request)
+  if (profile.role_slug !== 'admin') throw new HttpError(403, 'No tenés permisos para realizar esta acción.')
+  requireAal2(token)
   return { admin, actorId: user.id }
 }
 
@@ -44,18 +45,25 @@ async function audit(admin: ReturnType<typeof adminClient>, actorId: string, tar
 }
 
 Deno.serve(async (request) => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(request) })
+  if (request.method === 'OPTIONS') return preflight(request)
   if (request.method !== 'POST') return json(request, { error: 'Método no permitido.' }, 405)
 
   try {
     const { admin, actorId } = await requireAdmin(request)
-    const payload = await request.json().catch(() => ({})) as Record<string, unknown>
+    if (!await rateLimit('admin-users:user', actorId, 60, 60)) {
+      await recordSecurityEvent('admin.rate_limited', request, { actorId, severity: 'critical' })
+      throw new HttpError(429, 'Demasiadas operaciones administrativas. Esperá un momento.')
+    }
+    const payload = await readJsonBody<Record<string, unknown>>(request, 8192)
     const action = clean(payload.action, 40)
 
     if (action === 'list') {
       const page = Math.max(1, Number.parseInt(String(payload.page || 1), 10) || 1)
       const pageSize = Math.min(PAGE_SIZE_MAX, Math.max(1, Number.parseInt(String(payload.pageSize || 20), 10) || 20))
-      const search = clean(payload.search, 120).replaceAll('%', '\\%').replaceAll('_', '\\_')
+      const search = clean(payload.search, 120)
+        .replace(/[^\p{L}\p{M}\p{N}@._+\-\s]/gu, '')
+        .replaceAll('%', '\\%')
+        .replaceAll('_', '\\_')
       const role = clean(payload.role, 40)
       const status = clean(payload.status, 20)
       let query = admin
@@ -117,9 +125,7 @@ Deno.serve(async (request) => {
     return json(request, { error: 'Acción no reconocida.' }, 400)
   } catch (error) {
     console.error(error)
-    const message = error instanceof Error ? error.message : ''
-    if (message === 'AUTH_REQUIRED') return json(request, { error: 'Iniciá sesión para continuar.' }, 401)
-    if (message === 'FORBIDDEN') return json(request, { error: 'No tenés permisos para realizar esta acción.' }, 403)
+    if (error instanceof HttpError) return json(request, { error: error.message }, error.status)
     return json(request, { error: 'No se pudo completar la operación administrativa.' }, 500)
   }
 })

@@ -4,7 +4,17 @@ __pycache__/
 *.pyc
 .env
 .env.*.local
+*.jks
+*.keystore
+*.p12
+*.pfx
+*.pem
+google-services.json
+service-account*.json
 .DS_Store
 *.log
 .vite/
 .supabase/
+.android-tools/
+.android-signing/
+AirSense-*.apk

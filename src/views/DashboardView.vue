@@ -1,12 +1,19 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue'
+import { Capacitor } from '@capacitor/core'
 import MetricCard from '../components/MetricCard.vue'
-import SparkChart from '../components/SparkChart.vue'
+import HistoricalDashboard from '../components/HistoricalDashboard.vue'
+import SmartRecommendations from '../components/SmartRecommendations.vue'
 import QuoteModal from '../components/QuoteModal.vue'
+import DeviceSwitcher from '../components/DeviceSwitcher.vue'
+import DeviceTechnicalStatus from '../components/DeviceTechnicalStatus.vue'
 import { useReadings } from '../composables/useReadings'
-import { classifyReading, recommendations } from '../lib/environment'
+import { useDevices } from '../composables/useDevices'
+import { useLocalAlerts } from '../composables/useLocalAlerts'
+import { classifyReading } from '../lib/environment'
 import { supabase } from '../lib/supabase'
 
+const deviceManager = useDevices()
 const {
   readings,
   latest,
@@ -17,23 +24,42 @@ const {
   realtimeConnected,
   stationOnline,
   reload,
-} = useReadings()
+} = useReadings(deviceManager.selectedDeviceId)
 
 const showQuote = ref(false)
-const selectedRoom = ref('Sede Central · Sala de Operaciones (Piso 3)')
+const nativeApp = Capacitor.isNativePlatform()
+const localAlerts = useLocalAlerts(deviceManager.selectedDeviceId)
+const networkOnline = ref(navigator.onLine)
 
 const email = ref('')
 const sending = ref(false)
 const emailMessage = ref('')
 const emailSuccess = ref(false)
 const analysis = computed(() => classifyReading(latest.value ?? {}))
-const tips = computed(() => recommendations(latest.value ?? {}))
+
+function updateNetworkState() {
+  networkOnline.value = navigator.onLine
+}
+onMounted(() => {
+  window.addEventListener('online', updateNetworkState)
+  window.addEventListener('offline', updateNetworkState)
+})
+onBeforeUnmount(() => {
+  window.removeEventListener('online', updateNetworkState)
+  window.removeEventListener('offline', updateNetworkState)
+})
+
+watch(
+  () => latest.value?.id,
+  () => localAlerts.processReading(latest.value),
+  { immediate: true },
+)
 
 const cards = computed(() => [
-  { key: 'temperature', title: 'Temperatura Confort', sensor: 'Sensor Sensirion SHT30', value: format(latest.value?.temperature), unit: '°C', icon: '°', accent: '#f97316' },
-  { key: 'humidity', title: 'Humedad Relativa', sensor: 'Sensor Sensirion SHT30', value: format(latest.value?.humidity), unit: '%', icon: '◒', accent: '#08a6ba' },
-  { key: 'noise', title: 'Presión Acústica', sensor: 'Micrófono MAX4466', value: format(latest.value?.noise, 0), unit: 'dB', icon: '≋', accent: '#775cf6' },
-  { key: 'co2', title: 'Calidad de Aire CO₂', sensor: 'Sensor MQ-135 Industrial', value: format(latest.value?.co2, 0), unit: 'ppm', icon: '◌', accent: '#10b981' },
+  { key: 'temperature', title: 'Temperatura', sensor: 'Sensor Sensirion SHT30', value: format(latest.value?.temperature), unit: '°C', icon: 'temperature', accent: '#f97316' },
+  { key: 'humidity', title: 'Humedad Relativa', sensor: 'Sensor Sensirion SHT30', value: format(latest.value?.humidity), unit: '%', icon: 'humidity', accent: '#08a6ba' },
+  { key: 'noise', title: 'Nivel sonoro', sensor: 'Micrófono MAX4466', value: format(latest.value?.noise, 0), unit: 'dB', icon: 'noise', accent: '#775cf6' },
+  { key: 'co2', title: 'Calidad del aire', sensor: 'Sensor MQ-135 · estimación en partes por millón', value: format(latest.value?.co2, 0), unit: 'ppm', icon: 'air', accent: '#10b981' },
 ].map((card) => ({ ...card, state: analysis.value.metrics[card.key], trend: getTrend(card.key) })))
 
 function format(value, decimals = 1) {
@@ -97,16 +123,6 @@ async function sendEmail() {
         <h1>Consola de Supervisión en Tiempo Real</h1>
         <p>Telemetría continua de parámetros ambientales para auditorías de higiene, confort térmico y calidad de aire interior.</p>
         
-        <div class="room-selector-strip">
-          <span class="room-label">Punto de Medición:</span>
-          <select v-model="selectedRoom" class="room-select">
-            <option value="Sede Central · Sala de Operaciones (Piso 3)">Sede Central · Sala de Operaciones (Piso 3)</option>
-            <option value="Sede Central · Sala de Directorio">Sede Central · Sala de Directorio (Piso 5)</option>
-            <option value="Edificio Norte · Open Space Coworking">Edificio Norte · Open Space Coworking</option>
-            <option value="Planta Industrial · Laboratorio de Calidad">Planta Industrial · Laboratorio de Calidad</option>
-          </select>
-          <span class="sensor-id-pill">ID: <code>AS-PRO-0042</code></span>
-        </div>
       </div>
 
       <div class="connection-card panel">
@@ -117,6 +133,13 @@ async function sendEmail() {
         </div>
       </div>
     </section>
+
+    <Transition name="offline-banner">
+      <section v-if="!networkOnline" class="offline-banner page-width" role="status">
+        <strong>Sin conexión a internet</strong>
+        <span>Podés consultar lo que ya estaba cargado. AirSense retomará la sincronización automáticamente.</span>
+      </section>
+    </Transition>
 
     <!-- Supabase Setup Notice (only if not configured and demo is off) -->
     <section v-if="!configured && !demoEnabled" class="setup-notice page-width">
@@ -132,6 +155,19 @@ async function sendEmail() {
       <button type="button" @click="reload">Reintentar Conexión</button>
     </section>
 
+    <DeviceSwitcher
+      class="page-width"
+      :devices="deviceManager.devices.value"
+      :selected-id="deviceManager.selectedDeviceId.value"
+      :loading="deviceManager.loading.value"
+      @select="deviceManager.selectDevice"
+    />
+
+    <section v-if="deviceManager.error.value" class="error-notice page-width">
+      <span>{{ deviceManager.error.value }}</span>
+      <button type="button" @click="deviceManager.reload">Reintentar</button>
+    </section>
+
     <!-- Main Live Metrics Grid -->
     <section class="dashboard-content page-width">
       <div class="dashboard-meta">
@@ -141,36 +177,27 @@ async function sendEmail() {
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
           <span v-if="demoEnabled" class="demo-pill">Simulación Demostrativa</span>
-          <button type="button" class="corp-quote-mini-btn" @click="showQuote = true">Solicitar Presupuesto</button>
+          <button v-if="!nativeApp" type="button" class="corp-quote-mini-btn" @click="showQuote = true">Solicitar Presupuesto</button>
         </div>
       </div>
 
-      <div class="metrics-grid">
+      <TransitionGroup name="metric-list" tag="div" class="metrics-grid">
         <MetricCard v-for="card in cards" :key="card.key" v-bind="card" />
-        <article class="environment-card panel" :data-state="analysis.level">
+        <article :key="'environment'" class="environment-card panel" :data-state="analysis.level">
           <div class="environment-icon">{{ analysis.level === 'normal' ? '✓' : analysis.level === 'unknown' ? '…' : '!' }}</div>
           <h3>{{ analysis.title }}</h3>
           <p>{{ analysis.description }}</p>
           <span>{{ analysis.badge }}</span>
         </article>
-      </div>
+      </TransitionGroup>
+
+      <DeviceTechnicalStatus :device="deviceManager.selectedDevice.value" />
 
       <!-- Facility Protocols and Executive Email Reports -->
       <div class="dashboard-two-cols">
-        <article class="recommendations panel">
-          <span class="section-kicker">PROTOCOLOS DE FACILITY MANAGEMENT</span>
-          <h2>Acciones Operativas Recomendadas</h2>
-          <p style="color: var(--muted); font-size: 0.85rem; margin-top: -8px; margin-bottom: 14px;">
-            Medidas automáticas basadas en estándares internacionales de calidad de aire interior (ASHRAE y WELL):
-          </p>
-          <ul>
-            <li v-for="tip in tips" :key="tip">
-              <b>→</b>{{ tip }}
-            </li>
-          </ul>
-        </article>
+        <SmartRecommendations :reading="latest" />
 
-        <article class="email-panel panel">
+        <article v-if="!nativeApp" class="email-panel panel">
           <span class="section-kicker">AUDITORÍA Y REPORTES EJECUTIVOS</span>
           <h2>Remitir Informe a Dirección</h2>
           <p>
@@ -199,23 +226,8 @@ async function sendEmail() {
       </div>
     </section>
 
-    <!-- Historical Audit Charts -->
-    <section class="charts-section">
-      <div class="page-width">
-        <div class="section-heading left">
-          <span>TRAZABILIDAD Y REGISTRO HISTÓRICO</span>
-          <h2>Comportamiento de Variables Ambientales</h2>
-          <p style="color: var(--muted); margin-top: 6px;">Visualizá la evolución de las últimas lecturas para identificar patrones térmicos o picos de CO₂ durante las jornadas laborales.</p>
-        </div>
-        <div class="charts-grid">
-          <SparkChart title="Temperatura Confort" :readings="readings" field="temperature" unit="°C" color="#f97316" :reference="26" />
-          <SparkChart title="Humedad Relativa" :readings="readings" field="humidity" unit="%" color="#08a6ba" :reference="60" />
-          <SparkChart title="Presión Sonora" :readings="readings" field="noise" unit="dB" color="#775cf6" :reference="50" />
-          <SparkChart title="Concentración de CO₂" :readings="readings" field="co2" unit="ppm" color="#10b981" :reference="800" />
-        </div>
-      </div>
-    </section>
+    <HistoricalDashboard :device-id="deviceManager.selectedDeviceId.value" />
 
-    <QuoteModal :show="showQuote" @close="showQuote = false" />
+    <QuoteModal v-if="!nativeApp" :show="showQuote" @close="showQuote = false" />
   </div>
 </template>

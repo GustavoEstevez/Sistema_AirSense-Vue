@@ -15,6 +15,7 @@ const form = ref({
   phone: '',
   spaces: '1 a 3 espacios (Oficina)',
   notes: '',
+  website: '',
 })
 
 const submitted = ref(false)
@@ -127,6 +128,7 @@ onBeforeUnmount(() => {
           </p>
 
           <form class="quote-form" @submit.prevent="submitQuote">
+            <input v-model="form.website" class="quote-honeypot" name="website" type="text" tabindex="-1" autocomplete="off" aria-hidden="true" />
             <div class="form-row">
               <div class="form-group">
                 <label for="q-name">Nombre y Apellido *</label>

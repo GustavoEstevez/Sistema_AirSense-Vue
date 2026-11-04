@@ -6,15 +6,23 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "android:sync": "npm run build && npx cap sync android",
+    "android:assets": "powershell -ExecutionPolicy Bypass -File scripts/generate-android-assets.ps1",
+    "android:apk": "powershell -ExecutionPolicy Bypass -File scripts/build-android.ps1",
+    "android:release": "powershell -ExecutionPolicy Bypass -File scripts/build-android-release.ps1",
     "preview": "vite preview",
     "test": "node --test tests/*.test.js"
   },
   "dependencies": {
+    "@capacitor/android": "^8.6.0",
+    "@capacitor/core": "^8.6.0",
+    "@capacitor/local-notifications": "^8.3.1",
     "@supabase/supabase-js": "^2.58.0",
     "vue": "^3.5.22",
     "vue-router": "^4.6.3"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.6.0",
     "@vitejs/plugin-vue": "^6.0.1",
     "vite": "^7.1.12"
   }

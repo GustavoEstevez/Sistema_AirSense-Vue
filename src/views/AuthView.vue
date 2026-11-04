@@ -1,5 +1,6 @@
 <script setup>
 import { computed, reactive, ref, watch } from 'vue'
+import { Capacitor } from '@capacitor/core'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../composables/useAuth'
 import { validateName, validatePassword } from '../lib/authValidation'
@@ -7,6 +8,7 @@ import { validateName, validatePassword } from '../lib/authValidation'
 const route = useRoute()
 const router = useRouter()
 const auth = useAuth()
+const nativeApp = Capacitor.isNativePlatform()
 const busy = ref(false)
 const error = ref('')
 const notice = ref('')
@@ -48,18 +50,18 @@ async function submit() {
   try {
     if (mode.value === 'register') {
       const data = await auth.signUp(form)
-      if (data.session) await router.replace('/panel/')
+      if (data.session) await router.replace(nativeApp ? '/dashboard/' : '/panel/')
       else notice.value = 'Cuenta creada. Revisá tu correo para confirmar el registro antes de ingresar.'
     } else if (mode.value === 'recovery') {
       await auth.updatePassword(form.password)
       notice.value = 'Contraseña actualizada correctamente.'
-      window.setTimeout(() => router.replace('/panel/'), 900)
+      window.setTimeout(() => router.replace(nativeApp ? '/dashboard/' : '/panel/'), 900)
     } else if (forgotMode.value) {
       await auth.requestPasswordReset(form.email)
       notice.value = 'Si existe una cuenta con ese correo, vas a recibir un enlace para recuperar el acceso.'
     } else {
       await auth.signIn(form.email, form.password)
-      await router.replace(String(route.query.redirect || '/panel/'))
+      await router.replace(String(route.query.redirect || (nativeApp ? '/dashboard/' : '/panel/')))
     }
   } catch (submitError) {
     error.value = submitError?.message || 'No pudimos completar la operación.'
@@ -92,13 +94,13 @@ async function submit() {
 
         <div v-if="!forgotMode" class="form-group">
           <label for="auth-password">{{ mode === 'recovery' ? 'Nueva contraseña' : 'Contraseña' }}</label>
-          <input id="auth-password" v-model="form.password" type="password" required :autocomplete="mode === 'login' ? 'current-password' : 'new-password'" minlength="10" />
+          <input id="auth-password" v-model="form.password" type="password" required :autocomplete="mode === 'login' ? 'current-password' : 'new-password'" :minlength="mode === 'login' ? undefined : 12" />
           <small v-if="mode !== 'login'">Mínimo 10 caracteres, con mayúscula, minúscula y número.</small>
         </div>
 
         <div v-if="mode === 'register' || mode === 'recovery'" class="form-group">
           <label for="auth-confirm">Confirmar contraseña</label>
-          <input id="auth-confirm" v-model="form.confirm" type="password" required autocomplete="new-password" minlength="10" />
+          <input id="auth-confirm" v-model="form.confirm" type="password" required autocomplete="new-password" minlength="12" />
         </div>
 
         <p v-if="error" class="form-error" role="alert">{{ error }}</p>
