@@ -1,0 +1,121 @@
+/* Responsive layout layer: shared sizing, tablet layouts, then compact screens. */
+:root { --page-gutter: clamp(16px, 3vw, 40px); }
+.page-width { width: min(1180px, calc(100% - var(--page-gutter) * 2)); }
+.app-shell, main { min-width: 0; }
+:where(.panel, .docs-main, .form-group, .admin-toolbar label,
+  .showcase-grid > *, .split-hero > *, .account-grid > *,
+  .dashboard-two-cols > *, .footer-grid > *) { min-width: 0; }
+:where(h1, h2, h3, h4, p, li, .quote-summary, .account-meta, .footer-bottom) {
+  overflow-wrap: anywhere;
+}
+:where(h1, h2, h3) { text-wrap: balance; }
+.section { padding-block: clamp(56px, 7vw, 110px); }
+.section-heading { margin-bottom: clamp(28px, 4vw, 52px); }
+.section-heading h2 { font-size: clamp(1.8rem, 3.8vw, 3.4rem); line-height: 1.12; }
+.eyebrow { max-width: 100%; width: fit-content; line-height: 1.6; }
+.eyebrow i, .metric-icon, .pillar-icon { flex-shrink: 0; }
+.button { max-width: 100%; height: auto; padding-block: 12px; text-align: center; line-height: 1.4; }
+.hero-facts { flex-wrap: wrap; }
+.room-select { min-width: 0; max-width: 100%; min-height: 44px; }
+.state-pill { max-width: 100%; }
+.metric-number { flex-wrap: wrap; }
+.chart-head { gap: 10px; flex-wrap: wrap; }
+.dashboard-meta { gap: 12px; flex-wrap: wrap; }
+.table-wrap, .spec-table-wrap, .comparison-table-wrap, .admin-table-wrap {
+  max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain;
+}
+.spec-table, .comparison-table { min-width: 580px; }
+.table-wrap table { min-width: 560px; }
+.quote-modal-overlay { padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
+.quote-modal { max-height: calc(100dvh - 32px); overscroll-behavior: contain; }
+.quote-modal h2 { padding-right: 24px; }
+.quote-modal .close-btn { width: 44px; height: 44px; top: 8px; right: 8px; }
+.lightbox { padding: 64px 16px 24px; overflow-y: auto; }
+.lightbox img { max-width: 100%; max-height: 72dvh; object-fit: contain; }
+.lightbox button { width: 44px; height: 44px; right: 12px; top: 12px; }
+.lightbox p { text-align: center; }
+.pagination { gap: 12px; flex-wrap: wrap; }
+.pagination button { width: 44px; height: 44px; }
+
+@media (min-width: 701px) and (max-width: 1100px) {
+  .pricing-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); max-width: none; gap: 24px; }
+  .pricing-card:last-child { grid-column: 1 / -1; width: calc(50% - 12px); justify-self: center; }
+  .pricing-card.highlighted, .pricing-card.highlighted:hover { transform: none; }
+  .pillars-grid, .sectors-grid, .security-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .site-footer .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 1100px) {
+  .split-hero { gap: 32px; }
+  .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .environment-card { grid-column: 1 / -1; min-height: 220px; }
+  .showcase-grid { gap: 32px; }
+}
+@media (max-width: 820px) {
+  .hardware-page .split-hero, .docs-hero, .gallery-hero { padding-top: 48px; }
+  .hardware-page .split-hero { padding-bottom: 48px; }
+  .split-hero h1, .hardware-page .split-hero h1, .docs-hero h1, .gallery-hero h1 {
+    font-size: clamp(2rem, 6.5vw, 3.8rem); line-height: 1.08; letter-spacing: -.04em;
+  }
+  .docs-content { gap: 28px; padding-bottom: 64px; }
+  .docs-content aside { gap: 4px; }
+  .docs-content aside a { min-height: 44px; display: inline-flex; align-items: center; padding: 8px 12px; }
+  .doc-section { padding-bottom: 40px; }
+  .doc-section pre { max-width: 100%; font-size: .8rem; }
+  .showcase, .dark-band, .charts-section { padding-block: 56px; }
+  .showcase-img-wrap img { transform: none; }
+  .site-footer { padding-top: 48px; }
+  .footer-grid { gap: 32px; }
+  .footer-nav-col a { display: inline-flex; align-items: center; min-height: 44px; }
+  .footer-nav-col { gap: 4px; }
+  .form-group input, .form-group select, .form-group textarea,
+  .admin-toolbar input, .admin-toolbar select, .email-panel input, .room-select {
+    font-size: 16px; /* Avoid automatic form zoom on mobile Safari. */
+  }
+  .form-group input, .form-group select, .admin-toolbar input, .admin-toolbar select { min-height: 48px; }
+}
+@media (max-width: 700px) {
+  .pricing-grid { grid-template-columns: minmax(0, 1fr); max-width: 560px; gap: 28px; }
+  .plan-desc { min-height: 0; }
+  .pillars-grid, .sectors-grid, .security-grid { grid-template-columns: minmax(0, 1fr); }
+  .site-footer .footer-grid { grid-template-columns: minmax(0, 1fr); }
+  .room-selector-strip { align-items: stretch; }
+  .room-select { width: 100%; }
+  .room-label { width: 100%; }
+  .email-panel form > div { flex-direction: column; gap: 8px; }
+  .email-panel input, .email-panel button { min-height: 48px; border-radius: 10px; }
+}
+@media (max-width: 560px) {
+  .metrics-grid, .charts-grid, .feature-grid, .hardware-grid, .steps-grid, .download-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .environment-card { grid-column: auto; }
+  .dashboard-hero { padding-block: 36px 24px; gap: 24px; }
+  .dashboard-hero h1 { font-size: clamp(1.9rem, 8vw, 2.6rem); line-height: 1.12; }
+  .connection-card { width: 100%; }
+  .metric-card, .environment-card { min-height: 220px; }
+  .metric-number strong { font-size: 2.5rem; }
+  .recommendations, .email-panel, .chart-card, .steps-grid article { padding: 22px 18px; }
+  .hero-actions { flex-direction: column; align-items: stretch; }
+  .hero-actions > * { width: 100%; }
+  .hero-facts { gap: 16px; }
+  .hero-facts > div { flex: 1 1 80px; }
+  .gallery-grid { grid-auto-rows: clamp(220px, 65vw, 340px); }
+  .cta-section { width: 100%; margin-inline: 0; padding: 44px 20px; }
+  .cta-section h2 { font-size: clamp(1.8rem, 7vw, 2.5rem); line-height: 1.15; }
+  .cta-section .button { width: 100%; }
+  .footer-legal { flex-direction: column; gap: 12px; }
+  .quote-modal { padding: 24px 18px; }
+  .quote-modal h2 { font-size: 1.5rem; }
+  .quote-summary > div { display: flex; flex-direction: column; gap: 4px; }
+  .form-footer .button { min-width: 0 !important; }
+  .account-meta { gap: 8px; }
+  .account-meta span { max-width: 100%; overflow-wrap: anywhere; }
+}
+@media (hover: none) {
+  .button:hover, .pillar-card:hover, .sector-card:hover, .pricing-card:hover,
+  .pricing-card.highlighted:hover { transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .pulse, .live-indicator-dot { animation: none; }
+}
