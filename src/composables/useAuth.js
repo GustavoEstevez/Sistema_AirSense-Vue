@@ -1,10 +1,12 @@
 import { computed, ref } from 'vue'
+import { Capacitor } from '@capacitor/core'
 import { supabase, supabaseConfigured } from '../lib/supabase'
 import { validatePassword } from '../lib/authValidation'
 
 const user = ref(null)
 const profile = ref(null)
 const loading = ref(true)
+const passwordRecovery = ref(false)
 let initialized = false
 let initialization
 let subscription
@@ -42,6 +44,9 @@ export function initializeAuth() {
       initialized = true
       return
     }
+    const hash = new URLSearchParams(window.location.hash.replace(/^#/, ''))
+    const query = new URLSearchParams(window.location.search)
+    passwordRecovery.value = hash.get('type') === 'recovery' || query.get('type') === 'recovery'
     const { data } = await supabase.auth.getSession()
     user.value = data.session?.user ?? null
     if (user.value) {
@@ -52,7 +57,8 @@ export function initializeAuth() {
         profile.value = null
       }
     }
-    const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
+    const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'PASSWORD_RECOVERY') passwordRecovery.value = true
       user.value = session?.user ?? null
       if (!user.value) profile.value = null
       window.setTimeout(() => loadProfile().catch(() => { profile.value = null }), 0)
@@ -71,11 +77,14 @@ export function useAuth() {
     if (!supabase) throw new Error('Supabase no está configurado.')
     const passwordError = validatePassword(password)
     if (passwordError) throw new Error(passwordError)
-    const redirectTo = `${window.location.origin}/cuenta/ingresar/`
+    const redirectTo = Capacitor.isNativePlatform() ? undefined : `${window.location.origin}/cuenta/ingresar/`
     const { data, error } = await supabase.auth.signUp({
       email: email.trim().toLowerCase(),
       password,
-      options: { emailRedirectTo: redirectTo, data: { first_name: firstName.trim(), last_name: lastName.trim() } },
+      options: {
+        ...(redirectTo ? { emailRedirectTo: redirectTo } : {}),
+        data: { first_name: firstName.trim(), last_name: lastName.trim() },
+      },
     })
     if (error) throw new Error(authMessage(error))
     return data
@@ -102,10 +111,16 @@ export function useAuth() {
 
   async function requestPasswordReset(email) {
     if (!supabase) throw new Error('Supabase no está configurado.')
-    const redirectTo = `${window.location.origin}/cuenta/recuperar/`
-    const { error } = await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), { redirectTo })
-    if (error && !String(error.message).toLowerCase().includes('rate limit')) return
-    if (error) throw new Error(authMessage(error))
+    const redirectTo = Capacitor.isNativePlatform() ? undefined : `${window.location.origin}/cuenta/recuperar/`
+    const { error } = await supabase.auth.resetPasswordForEmail(
+      email.trim().toLowerCase(),
+      redirectTo ? { redirectTo } : undefined,
+    )
+    if (error) throw new Error(
+      String(error.message).toLowerCase().includes('rate limit')
+        ? authMessage(error)
+        : 'No pudimos enviar el correo de recuperación. Intentá nuevamente.',
+    )
   }
 
   async function updatePassword(password) {
@@ -138,6 +153,7 @@ export function useAuth() {
     user,
     profile,
     loading,
+    passwordRecovery,
     isAuthenticated: computed(() => Boolean(user.value && profile.value?.status === 'active')),
     isAdmin: computed(() => profile.value?.role_slug === 'admin' && profile.value?.status === 'active'),
     initialize: initializeAuth,

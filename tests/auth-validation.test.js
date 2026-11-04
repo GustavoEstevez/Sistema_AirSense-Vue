@@ -3,14 +3,15 @@ import assert from 'node:assert/strict'
 import { isValidEmail, validateName, validatePassword } from '../src/lib/authValidation.js'
 
 test('accepts a strong password', () => {
-  assert.equal(validatePassword('AirSense2026'), '')
+  assert.equal(validatePassword('AirSense2026!'), '')
 })
 
 test('rejects short and weak passwords', () => {
-  assert.match(validatePassword('Aa1'), /10 caracteres/)
+  assert.match(validatePassword('Aa1!'), /12 caracteres/)
   assert.match(validatePassword('airsenseairsense'), /mayúscula/)
   assert.match(validatePassword('AIRSENSE2026'), /minúscula/)
-  assert.match(validatePassword('AirSenseSegura'), /número/)
+  assert.match(validatePassword('AirSenseSegura!'), /número/)
+  assert.match(validatePassword('AirSense2026'), /símbolo/)
 })
 
 test('validates email syntax without exposing account state', () => {

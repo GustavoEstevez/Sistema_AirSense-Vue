@@ -9,7 +9,7 @@ const pillars = [
     icon: 'M13 2 4 14h6l-1 8 9-12h-6l1-8z',
     title: 'Productividad y Enfoque Cognitivo',
     metric: '+15% de agudeza mental',
-    text: 'Estudios demuestran que niveles de CO₂ superiores a 1.000 ppm incrementan la somnolencia y reducen la velocidad de toma de decisiones. AirSense alerta a tiempo para mantener el foco del equipo.',
+    text: 'La acumulación de gases y compuestos detectables por el MQ-135 puede advertir una ventilación insuficiente. AirSense informa la estimación en ppm para actuar a tiempo.',
   },
   {
     icon: 'M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z M9 12l2 2 4-4',
@@ -41,7 +41,7 @@ const pricingPlans = [
     features: [
       '1 a 3 Dispositivos AirSense Pro',
       'Dashboard en tiempo real con Supabase Cloud',
-      'Métricas en vivo: Temp, Humedad, CO₂ y Ruido',
+      'Métricas en vivo: temperatura, humedad, calidad del aire (ppm) y nivel sonoro',
       'Alertas por correo electrónico automáticas',
       'Garantía de hardware 12 meses',
       'Soporte técnico estándar',
@@ -88,7 +88,7 @@ const pricingPlans = [
 
 const sectors = [
   { title: 'Oficinas Corporativas', desc: 'Ambientes ventilados que potencian la concentración, el bienestar y previenen el letargo vespertino.' },
-  { title: 'Salas de Reuniones', desc: 'Espacios de alta densidad donde el CO₂ se dispara en minutos si no hay renovación activa de aire.' },
+  { title: 'Salas de Reuniones', desc: 'Espacios de alta densidad donde la calidad del aire puede deteriorarse rápidamente si no hay renovación activa.' },
   { title: 'Clínicas y Laboratorios', desc: 'Control estricto de humedad y temperatura para conservación ambiental y seguridad biológica.' },
   { title: 'Centros Educativos', desc: 'Aulas y auditorios con aire limpio que garantizan una experiencia pedagógica saludable.' },
 ]
@@ -126,7 +126,7 @@ const sectors = [
         <img src="/assets/Fotos/HeroAI.png" alt="Estación IoT AirSense Pro para Empresas" />
         <div class="float-chip chip-air">
           <small>Calidad del Aire</small>
-          <strong>742 ppm CO₂</strong>
+          <strong>742 ppm · aire</strong>
           <span>● Rango Óptimo de Trabajo</span>
         </div>
         <div class="float-chip chip-temp">

@@ -1,4 +1,15 @@
-import { adminClient, corsHeaders, json, sendMail, sha256 } from '../_shared/airsense.ts'
+import {
+  adminClient,
+  HttpError,
+  json,
+  preflight,
+  rateLimit,
+  readJsonBody,
+  recordSecurityEvent,
+  requestAddress,
+  sendMail,
+  sha256,
+} from '../_shared/airsense.ts'
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 
@@ -33,10 +44,28 @@ function parseQuote(payload: Record<string, unknown>): QuoteRequest {
     spaces: clean(payload.spaces, 120) || 'Sin especificar',
     notes: clean(payload.notes, 2000),
   }
-  if (quote.name.length < 2) throw new Error('El nombre es obligatorio.')
-  if (quote.company.length < 2) throw new Error('La empresa es obligatoria.')
-  if (!EMAIL.test(quote.email)) throw new Error('El correo electrónico no es válido.')
+  if (quote.name.length < 2) throw new HttpError(400, 'El nombre es obligatorio.')
+  if (quote.company.length < 2) throw new HttpError(400, 'La empresa es obligatoria.')
+  if (!EMAIL.test(quote.email)) throw new HttpError(400, 'El correo electrónico no es válido.')
   return quote
+}
+
+async function verifyTurnstile(token: string, request: Request) {
+  const secret = Deno.env.get('TURNSTILE_SECRET_KEY')?.trim()
+  if (!secret) return
+  if (!token) throw new HttpError(400, 'Completá la verificación anti-bot.')
+  const body = new URLSearchParams({
+    secret,
+    response: token,
+    remoteip: requestAddress(request),
+  })
+  const response = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+    method: 'POST',
+    body,
+    signal: AbortSignal.timeout(8000),
+  })
+  const result = await response.json() as { success?: boolean }
+  if (!response.ok || !result.success) throw new HttpError(400, 'La verificación anti-bot no fue válida.')
 }
 
 function summaryRows(quote: QuoteRequest) {
@@ -66,11 +95,23 @@ async function sendEmail(to: string, subject: string, html: string, replyTo?: st
 }
 
 Deno.serve(async (request) => {
-  if (request.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders(request) })
+  if (request.method === 'OPTIONS') return preflight(request)
   if (request.method !== 'POST') return json(request, { error: 'Método no permitido.' }, 405)
 
   try {
-    const quote = parseQuote(await request.json())
+    const source = requestAddress(request)
+    if (!await rateLimit('quote:source', source, 5, 600)
+      || !await rateLimit('quote:global', 'all', 100, 3600)) {
+      await recordSecurityEvent('quote.rate_limited', request)
+      throw new HttpError(429, 'Demasiadas solicitudes. Intentá nuevamente más tarde.')
+    }
+    const payload = await readJsonBody<Record<string, unknown>>(request, 8192)
+    if (String(payload.website || '').trim()) {
+      await recordSecurityEvent('quote.honeypot', request)
+      throw new HttpError(400, 'No se pudo validar la solicitud.')
+    }
+    await verifyTurnstile(String(payload.turnstileToken || ''), request)
+    const quote = parseQuote(payload)
     const supabase = adminClient()
     const recipientHash = await sha256(quote.email)
     const { data: claimId, error: claimError } = await supabase.rpc('claim_email_dispatch', {
@@ -111,6 +152,8 @@ Deno.serve(async (request) => {
     return json(request, { ok: true })
   } catch (error) {
     console.error(error)
-    return json(request, { error: error instanceof Error ? error.message : 'No se pudo enviar la confirmación.' }, 500)
+    const status = error instanceof HttpError ? error.status : 500
+    const message = error instanceof HttpError ? error.message : 'No se pudo enviar la confirmación.'
+    return json(request, { error: message }, status)
   }
 })

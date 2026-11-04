@@ -79,8 +79,8 @@ async function leave() {
         <h2>Cambiar contraseña</h2>
         <form class="auth-form" @submit.prevent="changePassword">
           <div class="form-group"><label for="current-password">Contraseña actual</label><input id="current-password" v-model="passwordForm.current" type="password" required autocomplete="current-password" /></div>
-          <div class="form-group"><label for="new-password">Nueva contraseña</label><input id="new-password" v-model="passwordForm.password" type="password" required autocomplete="new-password" minlength="10" /></div>
-          <div class="form-group"><label for="confirm-password">Confirmar contraseña</label><input id="confirm-password" v-model="passwordForm.confirm" type="password" required autocomplete="new-password" minlength="10" /></div>
+          <div class="form-group"><label for="new-password">Nueva contraseña</label><input id="new-password" v-model="passwordForm.password" type="password" required autocomplete="new-password" minlength="12" /></div>
+          <div class="form-group"><label for="confirm-password">Confirmar contraseña</label><input id="confirm-password" v-model="passwordForm.confirm" type="password" required autocomplete="new-password" minlength="12" /></div>
           <button class="button secondary" :disabled="saving">Actualizar contraseña</button>
         </form>
       </article>

@@ -74,7 +74,7 @@ export function recommendations(reading = {}) {
   const result = []
   const state = classifyReading(reading)
   if (state.metrics.co2.level !== 'normal' && state.metrics.co2.level !== 'unknown') {
-    result.push('Abrí puertas o ventanas para renovar el aire del ambiente.')
+    result.push('Abrí puertas o ventanas para renovar el aire y observá si baja la lectura en ppm.')
   }
   if (state.metrics.noise.level !== 'normal' && state.metrics.noise.level !== 'unknown') {
     result.push('Reducí fuentes de ruido o alejate de ellas durante unos minutos.')

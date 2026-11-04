@@ -15,12 +15,20 @@ const char* DEFAULT_SERVER_URL = "https://TU_PROYECTO.supabase.co/functions/v1/i
 // Debe coincidir con el secreto AIRSENSE_DEVICE_KEY configurado en Supabase.
 // No uses la anon key ni la service_role key en el firmware.
 const char* AIRSENSE_DEVICE_KEY = "CAMBIAR_POR_UNA_CLAVE_LARGA_Y_ALEATORIA";
+const char* FIRMWARE_VERSION = "1.2.0";
+const char* DEFAULT_DEVICE_ID = "airsense-01"; // Mantiene compatible el primer equipo existente.
 String serverUrl = DEFAULT_SERVER_URL;
+String deviceId = DEFAULT_DEVICE_ID;
 WiFiManagerParameter custom_server(
     "server",
     "URL de Supabase Edge Function (ingest-reading)",
     DEFAULT_SERVER_URL,
     120);
+WiFiManagerParameter custom_device_id(
+    "device_id",
+    "ID unico del AirSense (ej: airsense-oficina-02)",
+    DEFAULT_DEVICE_ID,
+    40);
 
 Preferences prefs;
 
@@ -339,11 +347,22 @@ void guardarConfigCallback() {
   // Se llama únicamente cuando el usuario guarda desde el portal WiFiManager.
   // Solo acá se actualiza serverUrl, para no pisar la URL guardada en cada boot.
   serverUrl = String(custom_server.getValue());
+  String nuevoDeviceId = String(custom_device_id.getValue());
+  nuevoDeviceId.trim();
+  for (size_t i = 0; i < nuevoDeviceId.length(); i++) {
+    char caracter = nuevoDeviceId.charAt(i);
+    if (!isAlphaNumeric(caracter) && caracter != '-' && caracter != '_') nuevoDeviceId.setCharAt(i, '-');
+  }
+  if (nuevoDeviceId.length() == 0) nuevoDeviceId = DEFAULT_DEVICE_ID;
+  deviceId = nuevoDeviceId;
   prefs.begin("airsense", false);
   prefs.putString("server", serverUrl);
+  prefs.putString("device_id", deviceId);
   prefs.end();
   Serial.print("Guardando URL del servidor: ");
   Serial.println(serverUrl);
+  Serial.print("Guardando ID del dispositivo: ");
+  Serial.println(deviceId);
 }
 
 // =============================================================
@@ -427,8 +446,10 @@ void tareaRed(void *parametro) {
   wm.setConnectTimeout(30);
   wm.setConfigPortalTimeout(180);
   wm.addParameter(&custom_server);
+  wm.addParameter(&custom_device_id);
   // Prefill del campo con la URL guardada (la que se cargó en setup()).
   custom_server.setValue(serverUrl.c_str());
+  custom_device_id.setValue(deviceId.c_str());
   wm.setSaveConfigCallback(guardarConfigCallback);
 
   bool conectado = wm.autoConnect("ESP32-EstacionAmbiental", "12345678");
@@ -490,7 +511,11 @@ void tareaRed(void *parametro) {
     body += "\"temperatura\":" + String(temp, 1) + ",";
     body += "\"humedad\":"     + String(hum, 1)  + ",";
     body += "\"ruido\":"       + String(ruidoProm) + ",";
-    body += "\"co2\":"         + String(co2val, 0);
+    body += "\"co2\":"         + String(co2val, 0) + ",";
+    body += "\"device_id\":\"" + deviceId + "\",";
+    body += "\"wifi_rssi\":"    + String(WiFi.RSSI()) + ",";
+    body += "\"uptime_seconds\":" + String(millis() / 1000UL) + ",";
+    body += "\"firmware_version\":\"" + String(FIRMWARE_VERSION) + "\"";
     body += "}";
 
     int code = http.POST(body);
@@ -509,9 +534,13 @@ void setup() {
   // Cargar la URL guardada (la que se configuró por WiFiManager).
   prefs.begin("airsense", false);
   String savedUrl = prefs.getString("server", "");
+  String savedDeviceId = prefs.getString("device_id", "");
   prefs.end();
   if (savedUrl.length() > 0) {
     serverUrl = savedUrl;
+  }
+  if (savedDeviceId.length() > 0) {
+    deviceId = savedDeviceId;
   }
 
   display.init();

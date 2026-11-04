@@ -8,7 +8,7 @@ const variables = [
   ['Temperatura', '18–26 °C', 'SHT30', 'Fuera de 15–30 °C se considera crítico.'],
   ['Humedad relativa', '40–60 %', 'SHT30', 'Fuera de 30–70 % se considera crítico.'],
   ['Presión sonora', '≤ 50 dB', 'MAX4466', 'Por encima de 70 dB se considera crítico.'],
-  ['CO₂ / VOCs', '≤ 800 ppm', 'MQ-135', 'Por encima de 1200 ppm requiere ventilación inmediata.'],
+  ['Calidad del aire estimada', '≤ 800 ppm', 'MQ-135', 'Indicador relativo de gases y compuestos; no es una medición directa de CO₂.'],
 ]
 
 const standards = [
