@@ -13,7 +13,7 @@ const router = createRouter({
   },
   routes: [
     { path: '/', name: 'producto', component: ProductView, meta: { title: 'Inicio' } },
-    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard', requiresAuth: true } },
+    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard', requiresAuth: Capacitor.isNativePlatform() } },
     { path: '/hardware/', alias: '/clasico/', name: 'hardware', component: () => import('./views/ClassicView.vue'), meta: { title: 'Producto' } },
     { path: '/documentacion/', name: 'documentacion', component: () => import('./views/DocumentationView.vue'), meta: { title: 'Cómo funciona' } },
     { path: '/instalaciones/', alias: '/galeria/', name: 'instalaciones', component: () => import('./views/GalleryView.vue'), meta: { title: 'Instalaciones' } },

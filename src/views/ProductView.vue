@@ -1,35 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import QuoteModal from '../components/QuoteModal.vue'
+import NoiseInsightSection from '../components/NoiseInsightSection.vue'
+import EnvironmentalProblemsSection from '../components/EnvironmentalProblemsSection.vue'
+import SpacesExperienceSection from '../components/SpacesExperienceSection.vue'
 
 const showQuote = ref(false)
-
-const pillars = [
-  {
-    icon: 'M13 2 4 14h6l-1 8 9-12h-6l1-8z',
-    title: 'Productividad y Enfoque Cognitivo',
-    metric: '+15% de agudeza mental',
-    text: 'La acumulación de gases y compuestos detectables por el MQ-135 puede advertir una ventilación insuficiente. AirSense informa la estimación en ppm para actuar a tiempo.',
-  },
-  {
-    icon: 'M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z M9 12l2 2 4-4',
-    title: 'Salud Ocupacional y Menor Absentismo',
-    metric: '-21% en bajas laborales',
-    text: 'El control estricto de humedad relativa (40–60%) y ventilación continua reduce significativamente la persistencia de patógenos aerotransportados y la fatiga física en oficinas cerradas.',
-  },
-  {
-    icon: 'M20 4C10 4 5 8 5 14a5 5 0 0 0 5 5c6 0 10-5 10-15z M5 19c2-5 5-8 10-10',
-    title: 'Eficiencia Energética en Climatización',
-    metric: 'Hasta 22% ahorro HVAC',
-    text: 'Evitá sobreexigir los equipos de aire acondicionado y calefacción. La telemetría continua permite programar la ventilación sólo cuando el espacio realmente lo requiere.',
-  },
-  {
-    icon: 'M7 3h7l4 4v14H7z M14 3v5h5 M10 12h6 M10 16h6',
-    title: 'Cumplimiento Legal y Certificaciones',
-    metric: 'WELL, LEED y OSHA',
-    text: 'Generá registros auditables de calidad ambiental para comités de Higiene y Seguridad Laboral. Documentación lista para auditorías internas y normativas internacionales.',
-  },
-]
 
 const pricingPlans = [
   {
@@ -117,6 +93,9 @@ const sectors = [
       </video>
     </section>
 
+    <EnvironmentalProblemsSection />
+    <NoiseInsightSection />
+
     <!-- Commercial Pricing Packs -->
     <section class="section page-width">
       <div class="section-heading">
@@ -194,26 +173,7 @@ const sectors = [
       </div>
     </section>
 
-    <!-- Business Value Pillars -->
-    <section id="beneficios" class="section page-width">
-      <div class="section-heading">
-        <span>RETORNO DE INVERSIÓN Y BIENESTAR</span>
-        <h2>¿Por qué las empresas líderes<br />invierten en calidad ambiental?</h2>
-      </div>
-
-      <div class="pillars-grid">
-        <article v-for="pillar in pillars" :key="pillar.title" class="pillar-card panel">
-          <div class="pillar-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path :d="pillar.icon" />
-            </svg>
-          </div>
-          <span class="pillar-metric">{{ pillar.metric }}</span>
-          <h3>{{ pillar.title }}</h3>
-          <p>{{ pillar.text }}</p>
-        </article>
-      </div>
-    </section>
+    <SpacesExperienceSection />
 
     <!-- Interactive Live Telemetry Showcase -->
     <section class="showcase">
@@ -308,7 +268,7 @@ const sectors = [
   align-self: start;
   z-index: 2;
   width: 100%;
-  padding: clamp(40px, 7svh, 80px) var(--page-gutter, 16px) 32px;
+  padding: clamp(112px, 14svh, 152px) var(--page-gutter, 16px) 32px;
   text-align: center;
 }
 .product-hero-copy h1 {
@@ -362,18 +322,18 @@ const sectors = [
   display: block;
   width: 100%;
   height: 100%;
-  min-height: clamp(640px, calc(100svh - 64px), 960px);
+  min-height: clamp(640px, 100svh, 960px);
   object-fit: cover;
   object-position: center;
 }
 @media (max-width: 560px) {
-  .product-hero-copy { padding-top: 36px; }
+  .product-hero-copy { padding-top: 104px; }
   .product-hero-copy h1 { max-width: 16ch; font-size: clamp(2.25rem, 9vw, 3rem); }
   .product-hero-copy p { max-width: 33ch; }
-  .product-hero-video { min-height: clamp(620px, calc(100svh - 64px), 800px); }
+  .product-hero-video { min-height: clamp(620px, 100svh, 800px); }
 }
 @media (max-height: 500px) and (min-width: 561px) {
-  .product-hero-copy { padding-top: 28px; }
+  .product-hero-copy { padding-top: 104px; }
   .product-hero-copy h1 { font-size: 3rem; }
   .product-hero-video { min-height: 600px; }
 }
