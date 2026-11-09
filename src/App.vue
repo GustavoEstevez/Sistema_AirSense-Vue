@@ -13,7 +13,7 @@ const auth = useAuth()
 const showNativeActions = computed(() => nativeApp && auth.isAuthenticated.value && !String(route.name || '').match(/ingresar|registro|recuperar|verificar-2fa/))
 
 function updateTitle() {
-  document.title = route.meta.title ? `${route.meta.title} · AirSense Enterprise` : 'AirSense Enterprise'
+  document.title = route.meta.title ? `AirSense - ${route.meta.title}` : 'AirSense'
 }
 
 onMounted(updateTitle)

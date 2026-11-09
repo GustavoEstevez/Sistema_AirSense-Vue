@@ -1,35 +1,11 @@
 <script setup>
 import { ref } from 'vue'
 import QuoteModal from '../components/QuoteModal.vue'
+import NoiseInsightSection from '../components/NoiseInsightSection.vue'
+import EnvironmentalProblemsSection from '../components/EnvironmentalProblemsSection.vue'
+import SpacesExperienceSection from '../components/SpacesExperienceSection.vue'
 
 const showQuote = ref(false)
-
-const pillars = [
-  {
-    icon: 'M13 2 4 14h6l-1 8 9-12h-6l1-8z',
-    title: 'Productividad y Enfoque Cognitivo',
-    metric: '+15% de agudeza mental',
-    text: 'La acumulación de gases y compuestos detectables por el MQ-135 puede advertir una ventilación insuficiente. AirSense informa la estimación en ppm para actuar a tiempo.',
-  },
-  {
-    icon: 'M12 3l7 3v5c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z M9 12l2 2 4-4',
-    title: 'Salud Ocupacional y Menor Absentismo',
-    metric: '-21% en bajas laborales',
-    text: 'El control estricto de humedad relativa (40–60%) y ventilación continua reduce significativamente la persistencia de patógenos aerotransportados y la fatiga física en oficinas cerradas.',
-  },
-  {
-    icon: 'M20 4C10 4 5 8 5 14a5 5 0 0 0 5 5c6 0 10-5 10-15z M5 19c2-5 5-8 10-10',
-    title: 'Eficiencia Energética en Climatización',
-    metric: 'Hasta 22% ahorro HVAC',
-    text: 'Evitá sobreexigir los equipos de aire acondicionado y calefacción. La telemetría continua permite programar la ventilación sólo cuando el espacio realmente lo requiere.',
-  },
-  {
-    icon: 'M7 3h7l4 4v14H7z M14 3v5h5 M10 12h6 M10 16h6',
-    title: 'Cumplimiento Legal y Certificaciones',
-    metric: 'WELL, LEED y OSHA',
-    text: 'Generá registros auditables de calidad ambiental para comités de Higiene y Seguridad Laboral. Documentación lista para auditorías internas y normativas internacionales.',
-  },
-]
 
 const pricingPlans = [
   {
@@ -96,46 +72,29 @@ const sectors = [
 
 <template>
   <div class="product-page">
-    <!-- Corporate Hero Section -->
-    <section class="hero page-width">
-      <div class="hero-copy">
-        <span class="eyebrow"><i></i> TECNOLOGÍA IOT CORPORATIVA · AIRSENSE™ PRO</span>
-        <h1>Telemetría ambiental inteligente para <em>empresas exigentes.</em></h1>
-        <p>
-          Monitoreá en tiempo real la calidad del aire, temperatura, humedad y niveles de ruido en tus oficinas.
-          Protegé la salud de tu equipo, optimizá costos de climatización y cumplí normativas internacionales con nuestra solución comercial llave en mano.
-        </p>
-
-        <div class="hero-actions">
-          <button type="button" class="button primary" @click="showQuote = true">
-            Solicitar Cotización Personalizada →
-          </button>
-        </div>
-
-        <div class="hero-facts">
-          <div><strong>4 en 1</strong><span>Sensores de precisión</span></div>
-          <div><strong>24/7</strong><span>Telemetría en tiempo real</span></div>
-          <div><strong>99.9%</strong><span>SLA Cloud Supabase</span></div>
-
-        </div>
+    <section id="producto" class="product-video-hero" aria-labelledby="product-hero-title">
+      <div class="product-hero-copy page-width">
+        <h1 id="product-hero-title">Hacemos visible lo invisible.</h1>
+        <p>AirSense monitorea las condiciones ambientales para acercarte información que antes pasaba desapercibida.</p>
+        <RouterLink to="/hardware/" class="hero-learn-more">Conocer más</RouterLink>
       </div>
-
-      <div class="hero-visual">
-        <div class="orbit orbit-one"></div>
-        <div class="orbit orbit-two"></div>
-        <img src="/assets/Fotos/HeroAI.png" alt="Estación IoT AirSense Pro para Empresas" />
-        <div class="float-chip chip-air">
-          <small>Calidad del Aire</small>
-          <strong>742 ppm · aire</strong>
-          <span>● Rango Óptimo de Trabajo</span>
-        </div>
-        <div class="float-chip chip-temp">
-          <small>Confort Térmico</small>
-          <strong>22.4 °C · 48% RH</strong>
-          <span>● Clima Confortable</span>
-        </div>
-      </div>
+      <video
+        class="product-hero-video"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        aria-label="Video de presentaci&#243;n del dispositivo AirSense"
+      >
+        <source src="/assets/airsense-product-hero.mp4" type="video/mp4" />
+        Tu navegador no puede reproducir este video.
+        <a href="/assets/airsense-product-hero.mp4">Descargar video de AirSense</a>
+      </video>
     </section>
+
+    <EnvironmentalProblemsSection />
+    <NoiseInsightSection />
 
     <!-- Commercial Pricing Packs -->
     <section class="section page-width">
@@ -214,26 +173,7 @@ const sectors = [
       </div>
     </section>
 
-    <!-- Business Value Pillars -->
-    <section class="section page-width">
-      <div class="section-heading">
-        <span>RETORNO DE INVERSIÓN Y BIENESTAR</span>
-        <h2>¿Por qué las empresas líderes<br />invierten en calidad ambiental?</h2>
-      </div>
-
-      <div class="pillars-grid">
-        <article v-for="pillar in pillars" :key="pillar.title" class="pillar-card panel">
-          <div class="pillar-icon" aria-hidden="true">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-              <path :d="pillar.icon" />
-            </svg>
-          </div>
-          <span class="pillar-metric">{{ pillar.metric }}</span>
-          <h3>{{ pillar.title }}</h3>
-          <p>{{ pillar.text }}</p>
-        </article>
-      </div>
-    </section>
+    <SpacesExperienceSection />
 
     <!-- Interactive Live Telemetry Showcase -->
     <section class="showcase">
@@ -279,11 +219,11 @@ const sectors = [
     </section>
 
     <!-- Bottom Corporate CTA -->
-    <section class="page-width" style="padding-bottom: 110px;">
+    <section id="contacto" class="page-width" style="padding-bottom: 110px;">
       <div class="cta-section">
         <span>IMPLEMENTACIÓN RÁPIDA · SOPORTE TÉCNICO DEDICADO</span>
         <h2>Transformá el ambiente de tu empresa en una ventaja competitiva.</h2>
-        <p style="max-width: 620px; margin: 15px auto 35px; color: #d4f8f2; font-size: 1.1rem; line-height: 1.6;">
+        <p style="max-width: 620px; margin: 15px auto 35px; color: #d5e9ea; font-size: 1.1rem; line-height: 1.5;">
           Agendá una reunión con nuestros asesores comerciales para dimensionar la cantidad de dispositivos óptima para tus instalaciones.
         </p>
         <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
@@ -301,3 +241,100 @@ const sectors = [
     <QuoteModal :show="showQuote" @close="showQuote = false" />
   </div>
 </template>
+
+<style scoped>
+.product-video-hero {
+  display: grid;
+  position: relative;
+  isolation: isolate;
+  width: 100%;
+  background: var(--c-ice);
+}
+/* A continuous veil keeps the copy readable without a separate text panel. */
+.product-video-hero::after {
+  content: '';
+  grid-area: 1 / 1;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    rgba(235, 244, 246, .96) 0%,
+    rgba(235, 244, 246, .88) 26%,
+    rgba(235, 244, 246, .45) 45%,
+    rgba(235, 244, 246, .12) 60%,
+    rgba(235, 244, 246, 0) 72%);
+}
+.product-hero-copy {
+  grid-area: 1 / 1;
+  align-self: start;
+  z-index: 2;
+  width: 100%;
+  padding: clamp(112px, 14svh, 152px) var(--page-gutter, 16px) 32px;
+  text-align: center;
+}
+.product-hero-copy h1 {
+  max-width: 18ch;
+  margin: 0 auto;
+  color: var(--c-navy);
+  font-family: var(--font-display);
+  font-size: clamp(2.5rem, 5.6vw, 5rem);
+  font-weight: 600;
+  line-height: 1.04;
+  letter-spacing: -.045em;
+  text-wrap: balance;
+}
+.product-hero-copy p {
+  max-width: 48ch;
+  margin: clamp(18px, 2vw, 26px) auto 0;
+  color: var(--c-navy);
+  font-size: clamp(1rem, 1.65vw, 1.375rem);
+  font-weight: 400;
+  line-height: 1.5;
+  text-wrap: pretty;
+}
+.hero-learn-more {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  margin-top: 24px;
+  padding: 11px 24px;
+  border: 1px solid var(--c-navy);
+  border-radius: 999px;
+  background: var(--c-navy);
+  color: var(--c-ice);
+  font-size: 1rem;
+  font-weight: 500;
+  line-height: 1.4;
+  transition: background-color .2s ease, border-color .2s ease;
+}
+.hero-learn-more:focus-visible {
+  outline: 3px solid var(--c-navy);
+  outline-offset: 4px;
+}
+@media (hover: hover) {
+  .hero-learn-more:hover { background: var(--c-black); border-color: var(--c-black); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hero-learn-more { transition: none; }
+}
+.product-hero-video {
+  grid-area: 1 / 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  min-height: clamp(640px, 100svh, 960px);
+  object-fit: cover;
+  object-position: center;
+}
+@media (max-width: 560px) {
+  .product-hero-copy { padding-top: 104px; }
+  .product-hero-copy h1 { max-width: 16ch; font-size: clamp(2.25rem, 9vw, 3rem); }
+  .product-hero-copy p { max-width: 33ch; }
+  .product-hero-video { min-height: clamp(620px, 100svh, 800px); }
+}
+@media (max-height: 500px) and (min-width: 561px) {
+  .product-hero-copy { padding-top: 104px; }
+  .product-hero-copy h1 { font-size: 3rem; }
+  .product-hero-video { min-height: 600px; }
+}
+</style>
