@@ -7,61 +7,6 @@ import SpacesExperienceSection from '../components/SpacesExperienceSection.vue'
 
 const showQuote = ref(false)
 
-const pricingPlans = [
-  {
-    name: 'Pack Oficina',
-    tag: 'PyMEs y Coworkings',
-    price: 'A Medida',
-    period: 'por espacio monitoreado',
-    desc: 'Ideal para empresas que buscan certificar salas de reuniones clave y áreas comunes.',
-    features: [
-      '1 a 3 Dispositivos AirSense Pro',
-      'Dashboard en tiempo real con Supabase Cloud',
-      'Métricas en vivo: temperatura, humedad, calidad del aire (ppm) y nivel sonoro',
-      'Alertas por correo electrónico automáticas',
-      'Garantía de hardware 12 meses',
-      'Soporte técnico estándar',
-    ],
-    highlight: false,
-    cta: 'Cotizar Pack Oficina',
-  },
-  {
-    name: 'Pack Corporativo',
-    tag: 'Sedes y Edificios',
-    price: 'Recomendado',
-    period: 'flota de 4 a 15 sensores',
-    desc: 'La solución estándar para corporaciones que gestionan pisos completos y múltiples departamentos.',
-    features: [
-      '4 a 15 Dispositivos AirSense Pro calibrados',
-      'Dashboard multi-sala centralizado en la nube',
-      'Reportes ejecutivos semanales y mensuales',
-      'Umbrales de alerta personalizados por sector',
-      'Acceso multi-usuario con roles diferenciados',
-      'SLA 99.9% de disponibilidad en tiempo real',
-      'Capacitación inicial a Facilities y RRHH',
-    ],
-    highlight: true,
-    cta: 'Solicitar Propuesta Corporativa',
-  },
-  {
-    name: 'Pack Enterprise',
-    tag: 'Grandes Empresas e Industrias',
-    price: 'Consultoría',
-    period: 'despliegue a gran escala',
-    desc: 'Para proyectos multi-sede, plantas industriales o integración directa con BMS y sistemas existentes.',
-    features: [
-      '+16 Dispositivos con despliegue llave en mano',
-      'Integración API REST y Webhooks a medida',
-      'Exportación masiva para auditorías HSE y ESG',
-      'Soporte 24/7 y reemplazo express de hardware',
-      'Instalación y calibración on-site certificada',
-      'Personalización de marca corporativa (White-label)',
-    ],
-    highlight: false,
-    cta: 'Contactar a Ventas Enterprise',
-  },
-]
-
 const sectors = [
   { title: 'Oficinas Corporativas', desc: 'Ambientes ventilados que potencian la concentración, el bienestar y previenen el letargo vespertino.' },
   { title: 'Salas de Reuniones', desc: 'Espacios de alta densidad donde la calidad del aire puede deteriorarse rápidamente si no hay renovación activa.' },
@@ -95,51 +40,6 @@ const sectors = [
 
     <EnvironmentalProblemsSection />
     <NoiseInsightSection />
-
-    <!-- Commercial Pricing Packs -->
-    <section class="section page-width">
-      <div class="section-heading">
-        <span>MODELOS DE ADQUISICIÓN</span>
-        <h2>Elegí el plan adecuado para el tamaño de tu empresa</h2>
-      </div>
-
-      <div class="pricing-grid">
-        <div
-          v-for="plan in pricingPlans"
-          :key="plan.name"
-          class="pricing-card panel"
-          :class="{ highlighted: plan.highlight }"
-        >
-          <span v-if="plan.highlight" class="popular-badge">MÁS ELEGIDO</span>
-          <div class="pricing-head">
-            <span class="plan-tag">{{ plan.tag }}</span>
-            <h3>{{ plan.name }}</h3>
-            <p class="plan-desc">{{ plan.desc }}</p>
-          </div>
-
-          <div class="pricing-val">
-            <strong>{{ plan.price }}</strong>
-            <small>{{ plan.period }}</small>
-          </div>
-
-          <ul class="pricing-features">
-            <li v-for="feat in plan.features" :key="feat">
-              <span class="check">✓</span> {{ feat }}
-            </li>
-          </ul>
-
-          <button
-            type="button"
-            class="button"
-            :class="plan.highlight ? 'primary' : 'secondary'"
-            style="width: 100%; margin-top: auto;"
-            @click="showQuote = true"
-          >
-            {{ plan.cta }}
-          </button>
-        </div>
-      </div>
-    </section>
 
     <!-- International Standards Section -->
     <section class="section page-width standards-section">
