@@ -48,7 +48,7 @@ async function submitQuote() {
   loading.value = true
   try {
     if (!supabaseConfigured || !supabase) {
-      throw new Error('El servicio de correo no está configurado. Escribinos a ventas@airsense.com.')
+      throw new Error('El servicio de correo no está configurado. Escribinos a airsensearg@gmail.com.')
     }
     const { data, error } = await supabase.functions.invoke('send-quote-email', {
       body: { ...form.value },

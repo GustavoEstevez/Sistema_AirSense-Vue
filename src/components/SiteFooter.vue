@@ -28,7 +28,7 @@ const groups = [
           <img src="/assets/Logos/LogoAirSense.png" alt="" width="44" height="44" />
           <span class="footer-brand-name">Air<span>Sense</span></span>
         </RouterLink>
-        <p>Información para entender tu entorno.</p>
+        <p>Sistema de Monitoreo Ambiental Inteligente</p>
       </div>
       <nav class="footer-directory" aria-label="Navegación al pie de página">
         <div v-for="group in groups" :key="group.title" class="footer-column">
@@ -40,7 +40,7 @@ const groups = [
         <div class="footer-column">
           <h2>Contacto</h2>
           <ul>
-            <li><a href="mailto:ventas@airsense.com">ventas@airsense.com</a></li>
+            <li><a href="mailto:airsensearg@gmail.com">airsensearg@gmail.com</a></li>
             <li><a href="https://www.instagram.com/airsensearg/" target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span><span class="footer-sr-only"> (se abre en otra pestaña)</span></a></li>
           </ul>
           <p class="footer-location">Buenos Aires, Argentina</p>

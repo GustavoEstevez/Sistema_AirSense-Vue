@@ -1,7 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 
-const props = defineProps({ device: { type: Object, default: null } })
+const props = defineProps({ device: { type: Object, default: null }, connection: { type: Object, default: () => ({ key: 'waiting', label: 'Esperando datos' }) } })
 
 const signal = computed(() => {
   if (props.device?.wifi_rssi == null) return { label: 'Pendiente', bars: 0 }
@@ -34,8 +34,8 @@ const battery = computed(() => {
 <template>
   <article class="technical-status panel">
     <div class="technical-status-heading">
-      <div><span class="section-kicker">ESTADO TÉCNICO</span><h2>Salud de la estación</h2></div>
-      <span class="technical-live-pill">En vivo</span>
+      <div><span class="section-kicker">TU DISPOSITIVO</span><h2>Estado de la estación</h2></div>
+      <span class="technical-live-pill" :data-connection="connection.key">{{ connection.label }}</span>
     </div>
     <div class="technical-status-grid">
       <div class="technical-item">
@@ -55,6 +55,6 @@ const battery = computed(() => {
         <span><small>Batería</small><strong>{{ battery }}</strong></span>
       </div>
     </div>
-    <p v-if="!device?.firmware_version" class="technical-status-note">Estos datos aparecerán después de cargar el firmware AirSense 1.2.0 en el ESP32. Las mediciones actuales siguen funcionando normalmente.</p>
+    <p v-if="!device?.firmware_version" class="technical-status-note">La información técnica aparecerá cuando esté disponible en tu estación.</p>
   </article>
 </template>

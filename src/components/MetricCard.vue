@@ -34,9 +34,7 @@ defineProps({
       <div><h3>{{ title }}</h3><p>{{ sensor }}</p></div>
     </div>
     <div class="metric-number">
-      <Transition name="metric-value" mode="out-in">
-        <strong :key="value">{{ value ?? '—' }}</strong>
-      </Transition><span>{{ unit }}</span>
+      <strong>{{ value ?? '—' }}</strong><span>{{ unit }}</span>
       <small v-if="Number.isFinite(trend)" :class="trend > 0 ? 'up' : trend < 0 ? 'down' : ''">
         {{ trend > 0 ? '↗' : trend < 0 ? '↘' : '→' }} {{ Math.abs(trend).toFixed(1) }}
       </small>

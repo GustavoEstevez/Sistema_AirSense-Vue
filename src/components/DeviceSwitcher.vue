@@ -21,7 +21,7 @@ function online(device) {
     <div class="device-switcher-heading">
       <div>
         <span class="section-kicker">MIS ESTACIONES</span>
-        <h2>{{ devices.length > 1 ? `${devices.length} dispositivos conectados` : 'Tu dispositivo AirSense' }}</h2>
+        <h2>{{ devices.length > 1 ? `${devices.length} estaciones disponibles` : 'Tu dispositivo AirSense' }}</h2>
       </div>
       <RouterLink to="/configuracion/" class="device-settings-link" aria-label="Administrar dispositivos">Administrar</RouterLink>
     </div>
