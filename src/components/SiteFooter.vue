@@ -28,7 +28,7 @@ const groups = [
           <img src="/assets/Logos/LogoAirSense.png" alt="" width="44" height="44" />
           <span class="footer-brand-name">Air<span>Sense</span></span>
         </RouterLink>
-        <p>Información para entender tu entorno.</p>
+        <p>Sistema de Monitoreo Ambiental Inteligente</p>
       </div>
       <nav class="footer-directory" aria-label="Navegación al pie de página">
         <div v-for="group in groups" :key="group.title" class="footer-column">

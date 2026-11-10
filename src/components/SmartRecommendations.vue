@@ -41,12 +41,13 @@ async function refreshWithAi() {
 <template>
   <article class="recommendations panel">
     <span class="section-kicker">ANÁLISIS DEL AMBIENTE</span>
-    <h2>Acciones recomendadas</h2>
+    <h2>Entendé tu ambiente.</h2>
     <p class="recommendation-context">Según la lectura actual y la región configurada: <strong>{{ region }}</strong>.</p>
     <p v-if="weather" class="recommendation-weather">Exterior: {{ weather.temperatureC.toFixed(1) }} °C, sensación {{ weather.feelsLikeC.toFixed(1) }} °C · {{ weather.condition }}. <small>Datos meteorológicos: WeatherAPI.com</small></p>
     <ul>
       <li v-for="tip in tips" :key="tip"><b>→</b>{{ tip }}</li>
     </ul>
+    <p class="recommendation-source">{{ aiTips.length ? 'Análisis generado con IA. Revisalo junto con las mediciones de tu estación.' : 'Orientaciones automáticas según las lecturas disponibles. No constituyen una evaluación de salubridad.' }}</p>
     <div class="ai-recommendation-actions">
       <button type="button" class="text-button" :disabled="loading || !reading" @click="refreshWithAi">
         {{ loading ? 'Analizando…' : 'Actualizar con IA' }}

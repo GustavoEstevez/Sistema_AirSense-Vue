@@ -94,7 +94,7 @@ onBeforeUnmount(() => {
 
 <style scoped>
 .airsense-header {
-  --header-height: 72px;
+  --header-height: 68px;
   --glass-fill: rgba(248,252,255,.38);
   --glass-blur: blur(28px) saturate(1.65);
   position: sticky;

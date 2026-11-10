@@ -12,6 +12,7 @@ import { useDevices } from '../composables/useDevices'
 import { useLocalAlerts } from '../composables/useLocalAlerts'
 import { classifyReading } from '../lib/environment'
 import { supabase } from '../lib/supabase'
+import { connectionStatus, isMeasurement, measurementTrend } from '../lib/dashboardPresentation'
 
 const deviceManager = useDevices()
 const {
@@ -21,8 +22,6 @@ const {
   error,
   configured,
   demoEnabled,
-  realtimeConnected,
-  stationOnline,
   reload,
 } = useReadings(deviceManager.selectedDeviceId)
 
@@ -30,6 +29,10 @@ const showQuote = ref(false)
 const nativeApp = Capacitor.isNativePlatform()
 const localAlerts = useLocalAlerts(deviceManager.selectedDeviceId)
 const networkOnline = ref(navigator.onLine)
+const clock = ref(Date.now())
+let statusTimer
+const connection = computed(() => connectionStatus({ online: networkOnline.value, error: error.value, configured, demo: demoEnabled, latest: latest.value, now: clock.value }))
+const stationName = computed(() => deviceManager.selectedDevice.value?.display_name || deviceManager.selectedDevice.value?.id || 'Sin estación seleccionada')
 
 const email = ref('')
 const sending = ref(false)
@@ -41,10 +44,12 @@ function updateNetworkState() {
   networkOnline.value = navigator.onLine
 }
 onMounted(() => {
+  statusTimer = window.setInterval(() => { clock.value = Date.now() }, 5000)
   window.addEventListener('online', updateNetworkState)
   window.addEventListener('offline', updateNetworkState)
 })
 onBeforeUnmount(() => {
+  clearInterval(statusTimer)
   window.removeEventListener('online', updateNetworkState)
   window.removeEventListener('offline', updateNetworkState)
 })
@@ -57,19 +62,17 @@ watch(
 
 const cards = computed(() => [
   { key: 'temperature', title: 'Temperatura', sensor: 'Sensor Sensirion SHT30', value: format(latest.value?.temperature), unit: '°C', icon: 'temperature', accent: '#f97316' },
-  { key: 'humidity', title: 'Humedad Relativa', sensor: 'Sensor Sensirion SHT30', value: format(latest.value?.humidity), unit: '%', icon: 'humidity', accent: '#08a6ba' },
+  { key: 'humidity', title: 'Humedad relativa', sensor: 'Sensor Sensirion SHT30', value: format(latest.value?.humidity), unit: '%', icon: 'humidity', accent: '#088395' },
   { key: 'noise', title: 'Nivel sonoro', sensor: 'Micrófono MAX4466', value: format(latest.value?.noise, 0), unit: 'dB', icon: 'noise', accent: '#775cf6' },
-  { key: 'co2', title: 'Calidad del aire', sensor: 'Sensor MQ-135 · estimación en partes por millón', value: format(latest.value?.co2, 0), unit: 'ppm', icon: 'air', accent: '#10b981' },
-].map((card) => ({ ...card, state: analysis.value.metrics[card.key], trend: getTrend(card.key) })))
+  { key: 'co2', title: 'Indicador del aire', sensor: 'MQ-135 · estimación en ppm', value: format(latest.value?.co2, 0), unit: 'ppm', icon: 'air', accent: '#088395' },
+].map((card) => ({ ...card, accent: '#088395', state: card.key === 'co2' ? { level: 'unknown', label: isMeasurement(latest.value?.co2) ? 'Estimación MQ-135' : 'Sin datos' } : !isMeasurement(latest.value?.[card.key]) ? { level: 'unknown', label: 'Sin datos' } : analysis.value.metrics[card.key], trend: getTrend(card.key) })))
 
 function format(value, decimals = 1) {
-  return Number.isFinite(Number(value)) ? Number(value).toFixed(decimals) : '—'
+  return isMeasurement(value) ? Number(value).toFixed(decimals) : '—'
 }
 
 function getTrend(field) {
-  const valid = readings.value.map((item) => Number(item[field])).filter(Number.isFinite)
-  if (valid.length < 2) return NaN
-  return valid.at(-1) - valid.at(-2)
+  return measurementTrend(readings.value, field)
 }
 
 function formatDate(date) {
@@ -112,24 +115,24 @@ async function sendEmail() {
 </script>
 
 <template>
-  <div class="dashboard-page page-grid-bg">
+  <div class="dashboard-page">
     <!-- Corporate Dashboard Top Bar -->
     <section class="dashboard-hero page-width">
       <div>
         <div class="corp-pill-wrap">
-          <span class="eyebrow"><i></i> CENTRO DE TELEMETRÍA AMBIENTAL</span>
-          <span class="enterprise-badge">AIRSENSE™ ENTERPRISE CLOUD</span>
+          <span class="dashboard-eyebrow">AIRSENSE · TU ESPACIO</span>
         </div>
-        <h1>Consola de Supervisión en Tiempo Real</h1>
-        <p>Telemetría continua de parámetros ambientales para auditorías de higiene, confort térmico y calidad de aire interior.</p>
+        <h1>Tu ambiente, en tiempo real.</h1>
+        <p>Toda la información de tu entorno, presentada de forma simple y clara.</p>
         
       </div>
 
-      <div class="connection-card panel">
-        <span class="connection-dot" :class="{ online: stationOnline }"></span>
+      <div class="connection-card panel" role="status" :data-connection="connection.key">
+        <span class="connection-dot" :class="{ online: connection.key === 'online' }"></span>
         <div>
-          <strong>{{ stationOnline ? 'Estación IoT Transmitiendo' : 'Estación en Reposo / Esperando Señal' }}</strong>
-          <small>{{ realtimeConnected || demoEnabled ? 'Canal Cifrado WSS Supabase Activo' : 'Conectando con Supabase Cloud' }}</small>
+          <strong>{{ connection.label }}</strong>
+          <small>{{ stationName }}</small>
+          <small>{{ loading ? 'Actualizando…' : latest ? 'Lecturas disponibles' : 'Sin mediciones disponibles' }}</small>
         </div>
       </div>
     </section>
@@ -144,10 +147,10 @@ async function sendEmail() {
     <!-- Supabase Setup Notice (only if not configured and demo is off) -->
     <section v-if="!configured && !demoEnabled" class="setup-notice page-width">
       <div>
-        <strong>Conexión con Supabase Cloud en Proceso</strong>
-        <p>Para sincronizar dispositivos físicos de tu empresa, configurá las claves en el archivo <code>.env</code>.</p>
+        <strong>Tu espacio está listo para conectar.</strong>
+        <p>La conexión de datos todavía no está configurada. Consultá la guía para comenzar.</p>
       </div>
-      <RouterLink to="/documentacion/">Guía de Integración IT →</RouterLink>
+      <RouterLink to="/documentacion/">Ver guía de conexión →</RouterLink>
     </section>
 
     <section v-if="error" class="error-notice page-width">
@@ -172,7 +175,7 @@ async function sendEmail() {
     <section class="dashboard-content page-width">
       <div class="dashboard-meta">
         <div style="display: flex; align-items: center; gap: 10px;">
-          <span class="live-indicator-dot"></span>
+          <span class="live-indicator-dot" :class="{ 'is-online': connection.key === 'online' }"></span>
           <p style="margin: 0;">{{ loading ? 'Recuperando telemetría de sensores…' : `Última muestra recibida: ${formatDate(latest?.recorded_at)}` }}</p>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
@@ -184,24 +187,24 @@ async function sendEmail() {
       <TransitionGroup name="metric-list" tag="div" class="metrics-grid">
         <MetricCard v-for="card in cards" :key="card.key" v-bind="card" />
         <article :key="'environment'" class="environment-card panel" :data-state="analysis.level">
-          <div class="environment-icon">{{ analysis.level === 'normal' ? '✓' : analysis.level === 'unknown' ? '…' : '!' }}</div>
-          <h3>{{ analysis.title }}</h3>
-          <p>{{ analysis.description }}</p>
-          <span>{{ analysis.badge }}</span>
+          <div class="environment-icon" aria-hidden="true">{{ latest ? '↗' : '…' }}</div>
+          <div><h3>{{ latest ? 'Tu entorno, medido.' : 'Esperando tu primera lectura.' }}</h3>
+          <p>{{ latest ? 'Consultá cada variable y su evolución. El MQ-135 ofrece una estimación del aire, no una medición verificada de CO₂.' : 'Las métricas aparecerán cuando tu estación envíe datos.' }}</p></div>
+          <span>{{ connection.label }}</span>
         </article>
       </TransitionGroup>
 
-      <DeviceTechnicalStatus :device="deviceManager.selectedDevice.value" />
+      <DeviceTechnicalStatus :device="deviceManager.selectedDevice.value" :connection="connection" />
 
       <!-- Facility Protocols and Executive Email Reports -->
       <div class="dashboard-two-cols">
         <SmartRecommendations :reading="latest" />
 
         <article v-if="!nativeApp" class="email-panel panel">
-          <span class="section-kicker">AUDITORÍA Y REPORTES EJECUTIVOS</span>
-          <h2>Remitir Informe a Dirección</h2>
+          <span class="section-kicker">COMPARTIR INFORMACIÓN</span>
+          <h2>Tu ambiente, en un informe.</h2>
           <p>
-            Envía instantáneamente un resumen ejecutivo certificado con las métricas ambientales actuales a la Gerencia de Recursos Humanos o Seguridad e Higiene.
+            Enviá un resumen de las mediciones actuales al correo que elijas.
           </p>
           <form @submit.prevent="sendEmail">
             <label for="reading-email">Correo Electrónico Corporativo</label>
@@ -211,16 +214,16 @@ async function sendEmail() {
                 v-model.trim="email"
                 type="email"
                 autocomplete="email"
-                placeholder="gerencia@tuempresa.com"
+                placeholder="nombre@empresa.com"
               />
               <button :disabled="sending">
-                {{ sending ? 'Despachando…' : 'Enviar Informe' }}
+                {{ sending ? 'Enviando…' : 'Enviar informe' }}
               </button>
             </div>
             <small :class="{ success: emailSuccess }" role="status">{{ emailMessage }}</small>
           </form>
           <div class="security-stamp">
-            <span>Procesado mediante Supabase Edge Functions con entrega segura vía Gmail SMTP.</span>
+            <span>Se comparte la última lectura disponible de la estación seleccionada.</span>
           </div>
         </article>
       </div>

@@ -91,9 +91,9 @@ watch(() => props.deviceId, (current, previous) => {
     <div class="page-width">
       <div class="history-heading">
         <div class="section-heading left">
-          <span>TRAZABILIDAD Y REGISTRO HISTÓRICO</span>
+          <span>TU ENTORNO A LO LARGO DEL TIEMPO</span>
           <h2>Historial ambiental</h2>
-          <p>Consultá las mediciones {{ periodDescription }}. Esta vista es de sólo lectura y no modifica la base.</p>
+          <p>Descubrí cómo cambia tu espacio. Mediciones {{ periodDescription }}.</p>
         </div>
         <div class="history-periods" role="group" aria-label="Período del historial">
           <button
@@ -101,6 +101,7 @@ watch(() => props.deviceId, (current, previous) => {
             :key="period.key"
             type="button"
             :class="{ active: selected === period.key }"
+            :aria-pressed="selected === period.key"
             :disabled="loading"
             @click="selectPeriod(period.key)"
           >{{ period.label }}</button>
@@ -111,11 +112,11 @@ watch(() => props.deviceId, (current, previous) => {
       <p v-else-if="error" class="form-error" role="alert">{{ error }}</p>
       <p v-else class="history-status">{{ readings.length.toLocaleString('es-AR') }} mediciones encontradas · se muestran hasta 240 puntos representativos por gráfico.</p>
 
-      <div class="charts-grid">
-        <SparkChart title="Temperatura" :readings="chartReadings" field="temperature" unit="°C" color="#f97316" :reference="26" />
-        <SparkChart title="Humedad relativa" :readings="chartReadings" field="humidity" unit="%" color="#08a6ba" :reference="60" />
-        <SparkChart title="Nivel sonoro" :readings="chartReadings" field="noise" unit="dB" color="#775cf6" :reference="50" />
-        <SparkChart title="Calidad del aire (ppm)" :readings="chartReadings" field="co2" unit="ppm" color="#10b981" :reference="800" />
+      <div class="charts-grid" :aria-busy="loading">
+        <SparkChart title="Temperatura" :readings="chartReadings" field="temperature" unit="°C" color="#088395" :reference="26" :loading="loading" />
+        <SparkChart title="Humedad relativa" :readings="chartReadings" field="humidity" unit="%" color="#088395" :reference="60" :loading="loading" />
+        <SparkChart title="Nivel sonoro" :readings="chartReadings" field="noise" unit="dB" color="#088395" :reference="50" :loading="loading" />
+        <SparkChart title="Indicador del aire · MQ-135" :readings="chartReadings" field="co2" unit="ppm" color="#088395" :reference="800" :loading="loading" />
       </div>
     </div>
   </section>
