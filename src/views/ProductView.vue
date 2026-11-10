@@ -1,18 +1,9 @@
 <script setup>
-import { ref } from 'vue'
-import QuoteModal from '../components/QuoteModal.vue'
 import NoiseInsightSection from '../components/NoiseInsightSection.vue'
 import EnvironmentalProblemsSection from '../components/EnvironmentalProblemsSection.vue'
 import SpacesExperienceSection from '../components/SpacesExperienceSection.vue'
+import DeviceDetailSection from '../components/DeviceDetailSection.vue'
 
-const showQuote = ref(false)
-
-const sectors = [
-  { title: 'Oficinas Corporativas', desc: 'Ambientes ventilados que potencian la concentración, el bienestar y previenen el letargo vespertino.' },
-  { title: 'Salas de Reuniones', desc: 'Espacios de alta densidad donde la calidad del aire puede deteriorarse rápidamente si no hay renovación activa.' },
-  { title: 'Clínicas y Laboratorios', desc: 'Control estricto de humedad y temperatura para conservación ambiental y seguridad biológica.' },
-  { title: 'Centros Educativos', desc: 'Aulas y auditorios con aire limpio que garantizan una experiencia pedagógica saludable.' },
-]
 </script>
 
 <template>
@@ -39,106 +30,11 @@ const sectors = [
     </section>
 
     <EnvironmentalProblemsSection />
+    <DeviceDetailSection />
     <NoiseInsightSection />
-
-    <!-- International Standards Section -->
-    <section class="section page-width standards-section">
-      <div class="section-heading">
-        <span>ESTÁNDARES INTERNACIONALES</span>
-        <h2>Diseñado según estándares internacionales</h2>
-        <p>Cada estación y cada informe de AirSense se alinean con las principales normas de calidad ambiental, eficiencia edilicia y seguridad ocupacional.</p>
-      </div>
-
-      <div class="standards-grid">
-        <article class="standard-card panel">
-          <strong>ASHRAE 62.1</strong>
-          <span>Ventilación para calidad de aire interior</span>
-        </article>
-        <article class="standard-card panel">
-          <strong>WELL v2</strong>
-          <span>Confort térmico, acústico y bienestar</span>
-        </article>
-        <article class="standard-card panel">
-          <strong>LEED v4.1</strong>
-          <span>Criterios de eficiencia y calidad ambiental</span>
-        </article>
-        <article class="standard-card panel">
-          <strong>OSHA / SRT</strong>
-          <span>Seguridad e higiene en el trabajo</span>
-        </article>
-        <article class="standard-card panel">
-          <strong>TLS 1.2+</strong>
-          <span>Cifrado de datos en tránsito</span>
-        </article>
-      </div>
-    </section>
 
     <SpacesExperienceSection />
 
-    <!-- Interactive Live Telemetry Showcase -->
-    <section class="showcase">
-      <div class="page-width showcase-grid">
-        <div>
-          <span class="eyebrow dark">PLATAFORMA CLOUD CENTRALIZADA</span>
-          <h2>Visibilidad inmediata de cada metro cuadrado de tu empresa.</h2>
-          <p>
-            Nuestra consola web conectada a Supabase Cloud y arquitectura Node.js procesa lecturas cada pocos segundos.
-            Visualizá tendencias históricas, configurá umbrales de alerta y enviá informes de auditoría a la gerencia con un solo clic.
-          </p>
-          <ul class="showcase-list">
-            <li>✓ Sincronización instantánea mediante WebSockets y Supabase Realtime.</li>
-            <li>✓ Envío automatizado de resúmenes por correo electrónico a RRHH y Facilities.</li>
-            <li>✓ Sin necesidad de instalar servidores locales ni configurar VPNs complejas.</li>
-          </ul>
-          <div style="margin-top: 30px; display: flex; gap: 14px; flex-wrap: wrap;">
-            <RouterLink to="/documentacion/" class="button secondary" style="color: white; border-color: rgba(255,255,255,0.2);">
-              Ver Funcionamiento
-            </RouterLink>
-          </div>
-        </div>
-        <div class="showcase-img-wrap">
-          <img src="/assets/Fotos/DashboardLive.jpg" alt="Consola de Monitoreo Centralizado AirSense" />
-        </div>
-      </div>
-    </section>
-
-    <!-- Sectors / Use Cases -->
-    <section class="section page-width">
-      <div class="section-heading">
-        <span>APLICACIONES CORPORATIVAS</span>
-        <h2>Adaptado a las exigencias de tu industria</h2>
-      </div>
-
-      <div class="sectors-grid">
-        <div v-for="sector in sectors" :key="sector.title" class="sector-card panel">
-          <div class="sector-badge">Solución Personalizada</div>
-          <h3>{{ sector.title }}</h3>
-          <p>{{ sector.desc }}</p>
-        </div>
-      </div>
-    </section>
-
-    <!-- Bottom Corporate CTA -->
-    <section id="contacto" class="page-width" style="padding-bottom: 110px;">
-      <div class="cta-section">
-        <span>IMPLEMENTACIÓN RÁPIDA · SOPORTE TÉCNICO DEDICADO</span>
-        <h2>Transformá el ambiente de tu empresa en una ventaja competitiva.</h2>
-        <p style="max-width: 620px; margin: 15px auto 35px; color: #d5e9ea; font-size: 1.1rem; line-height: 1.5;">
-          Agendá una reunión con nuestros asesores comerciales para dimensionar la cantidad de dispositivos óptima para tus instalaciones.
-        </p>
-        <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-          <button type="button" class="button light" style="font-weight: 800;" @click="showQuote = true">
-            Solicitar Presupuesto Formal
-          </button>
-          <RouterLink to="/documentacion/" class="button" style="border: 1px solid rgba(255,255,255,.4); color: white;">
-            Ver Funcionamiento
-          </RouterLink>
-        </div>
-      </div>
-    </section>
-
-    <!-- Quote Modal -->
-    <QuoteModal :show="showQuote" @close="showQuote = false" />
   </div>
 </template>
 
@@ -198,24 +94,42 @@ const sectors = [
   min-height: 44px;
   margin-top: 24px;
   padding: 11px 24px;
-  border: 1px solid var(--c-navy);
+  border: 1px solid rgba(255, 255, 255, .75);
   border-radius: 999px;
-  background: var(--c-navy);
-  color: var(--c-ice);
+  background: linear-gradient(135deg, rgba(255, 255, 255, .62), rgba(235, 248, 252, .3));
+  -webkit-backdrop-filter: blur(20px) saturate(1.65);
+  backdrop-filter: blur(20px) saturate(1.65);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .95), inset 0 -1px 1px rgba(255, 255, 255, .45), 0 5px 18px rgba(16, 39, 53, .1);
+  color: var(--c-navy);
   font-size: 1rem;
   font-weight: 500;
   line-height: 1.4;
-  transition: background-color .2s ease, border-color .2s ease;
+  transition: background-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 .hero-learn-more:focus-visible {
   outline: 3px solid var(--c-navy);
   outline-offset: 4px;
 }
 @media (hover: hover) {
-  .hero-learn-more:hover { background: var(--c-black); border-color: var(--c-black); }
+  .hero-learn-more:hover {
+    background-color: rgba(255, 255, 255, .3);
+    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), inset 0 -1px 1px rgba(255, 255, 255, .55), 0 8px 24px rgba(16, 39, 53, .14);
+    transform: translateY(-2px);
+  }
+}
+.hero-learn-more:active { transform: translateY(0); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .hero-learn-more { background: #edf6f8; }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .hero-learn-more {
+    background: #edf6f8;
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
 }
 @media (prefers-reduced-motion: reduce) {
-  .hero-learn-more { transition: none; }
+  .hero-learn-more { transition: none; transform: none; }
 }
 .product-hero-video {
   grid-area: 1 / 1;

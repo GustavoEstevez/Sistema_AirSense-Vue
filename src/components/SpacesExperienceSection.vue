@@ -120,15 +120,15 @@ onBeforeUnmount(() => {
 .space-fade-enter-active { z-index: 1; }
 .space-fade-enter-from, .space-fade-leave-to { opacity: 0; }
 .space-selector-scroll { overflow-x: auto; max-width: 100%; padding: 8px 5px; margin-top: clamp(24px, 3vw, 36px); scrollbar-width: thin; scrollbar-color: var(--c-mist) transparent; }
-.space-selector { display: flex; width: max-content; margin-inline: auto; gap: 4px; padding: 6px; border-radius: 999px; background: var(--c-ice); }
+.space-selector { display: flex; width: max-content; margin-inline: auto; gap: 4px; padding: 6px; border-radius: 999px; background: var(--glass-surface); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
 .space-selector button { min-height: 44px; padding: 10px 24px; border: 0; border-radius: 999px; background: transparent; color: var(--muted, #4f7480); font-size: 15px; font-weight: 600; white-space: nowrap; transition: background-color 250ms ease, color 250ms ease; }
-.space-selector button[aria-pressed='true'] { background: var(--c-navy); color: #fff; }
+.space-selector button[aria-pressed='true'] { background: linear-gradient(145deg, #17677b, var(--c-navy)); color: #fff; box-shadow: inset 0 1px 1px rgba(255,255,255,.35), 0 3px 10px rgba(10,76,96,.18); }
 .space-selector button:focus-visible { outline: 3px solid var(--c-teal); outline-offset: 3px; }
 .space-description { min-height: 132px; max-width: 650px; margin: 30px auto 0; text-align: center; }
 .space-description h3 { margin: 0 0 12px; font-family: var(--font-display); font-size: clamp(1.4rem, 2.4vw, 1.9rem); font-weight: 600; letter-spacing: -.025em; line-height: 1.2; color: var(--c-navy); }
 .space-description p { margin: 0; font-size: clamp(1rem, 1.5vw, 1.125rem); line-height: 1.6; color: var(--muted, #4f7480); text-wrap: pretty; }
 .space-error { text-align: center; color: var(--c-navy); }
-@media (hover: hover) { .space-selector button:not([aria-pressed='true']):hover { color: var(--c-navy); background: var(--mist-soft, #cfe3e4); } }
+@media (hover: hover) { .space-selector button:not([aria-pressed='true']):hover { color: var(--c-navy); background: var(--glass-hover); } }
 @media (max-width: 767px) {
   .spaces-inner { width: calc(100% - 32px); }
   .spaces-experience h2 { font-size: clamp(2rem, 7.4vw, 3rem); padding-inline: 8px; }
