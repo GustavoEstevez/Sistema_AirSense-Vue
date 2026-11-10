@@ -28,13 +28,11 @@ const menuButton = ref(null)
 let mobileQuery
 
 const links = [
-  { to: '/', label: 'Inicio' },
-  { to: '/dashboard/', label: 'Dashboard' },
+  { to: '/', name: 'producto', label: 'Inicio' },
+  { to: '/dashboard/', name: 'dashboard', label: 'Dashboard' },
 ]
 
-function isActive(path) {
-  return path.includes('#') ? route.fullPath === path : route.path === path && !route.hash
-}
+function isActive(link) { return route.name === link.name }
 function updateScroll() { scrolled.value = window.scrollY > 24 }
 function closeMenu() { menuOpen.value = false }
 function onOutside(event) {
@@ -81,7 +79,7 @@ onBeforeUnmount(() => {
       </RouterLink>
 
       <nav id="airsense-navigation" class="header-navigation" :class="{ 'is-open': menuOpen }" aria-label="Navegación principal">
-        <RouterLink v-for="link in links" :key="link.to" :to="link.to" class="navigation-link" :class="{ 'is-active': isActive(link.to) }" :aria-current="isActive(link.to) ? (link.to.includes('#') ? 'location' : 'page') : undefined" @click="closeMenu">{{ link.label }}</RouterLink>
+        <RouterLink v-for="link in links" :key="link.to" :to="link.to" class="navigation-link" :class="{ 'is-active': isActive(link) }" :aria-current="isActive(link) ? 'page' : undefined" @click="closeMenu">{{ link.label }}</RouterLink>
       </nav>
 
       <div class="header-controls">
@@ -97,25 +95,27 @@ onBeforeUnmount(() => {
 <style scoped>
 .airsense-header {
   --header-height: 72px;
-  --glass-fill: rgba(250, 250, 252, .8);
-  --glass-blur: blur(20px) saturate(1.8);
+  --glass-fill: rgba(248,252,255,.38);
+  --glass-blur: blur(28px) saturate(1.65);
   position: sticky;
-  top: 16px;
+  --header-offset: 16px;
+  top: var(--header-offset);
   z-index: 100;
   width: min(1280px, calc(100% - 48px));
-  margin: 16px auto 0;
+  margin: var(--header-offset) auto 0;
   isolation: isolate;
   color: var(--c-navy);
 }
-.airsense-header::before { content: ''; position: absolute; inset: 0; z-index: -2; border-radius: 30px; clip-path: var(--surface-clip); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); pointer-events: none; }
-.header-surface { position: absolute; inset: 0; z-index: -1; overflow: visible; pointer-events: none; filter: drop-shadow(0 4px 12px rgba(0, 0, 0, .06)); }
-.header-surface path { fill: var(--glass-fill); stroke: rgba(0, 0, 0, .08); stroke-width: 1; }
+.airsense-header::before { content: ''; position: absolute; inset: 0; z-index: -2; border-radius: 32px; clip-path: var(--surface-clip, inset(0 round 32px)); background: linear-gradient(115deg, rgba(255,255,255,.3), rgba(255,255,255,.04) 45%, rgba(219,241,247,.18)); -webkit-backdrop-filter: var(--glass-blur); backdrop-filter: var(--glass-blur); pointer-events: none; }
+.header-surface { position: absolute; inset: 0; z-index: -1; overflow: visible; pointer-events: none; filter: drop-shadow(0 8px 20px rgba(16,39,53,.1)); }
+.header-surface path { fill: var(--glass-fill); stroke: rgba(255,255,255,.65); stroke-width: 1; transition: fill .28s ease; }
 .airsense-header.over-hero { position: fixed; left: 50%; transform: translateX(-50%); margin: 0; }
 .airsense-header.is-scrolled {
   --header-height: 64px;
+  --glass-fill: rgba(248,252,255,.58);
 }
-.header-inner { width: calc(100% - 40px); height: var(--header-height); margin: auto; display: flex; align-items: center; gap: 24px; transition: height .28s ease; }
-.header-brand { display: inline-flex; flex-shrink: 0; align-items: center; gap: 8px; }
+.header-inner { width: calc(100% - 40px); height: var(--header-height); margin: auto; display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; gap: 24px; transition: height .28s ease; }
+.header-brand { justify-self: start; display: inline-flex; flex-shrink: 0; align-items: center; gap: 8px; }
 .header-brand img { width: 44px; height: 44px; object-fit: contain; }
 .header-brand > span { font-family: var(--font-display); font-size: 21px; font-weight: 600; letter-spacing: -.9px; line-height: 1.1; }
 .brand-accent { color: var(--c-teal); }
@@ -124,7 +124,7 @@ onBeforeUnmount(() => {
 .navigation-link::after { content: ''; position: absolute; height: 2px; left: 0; right: 0; bottom: 7px; border-radius: 2px; background: var(--c-teal); transform: scaleX(0); transition: transform .2s ease; }
 .navigation-link.is-active { color: var(--c-navy); }
 .navigation-link.is-active::after { transform: scaleX(1); }
-.header-controls { display: flex; align-items: center; gap: 16px; }
+.header-controls { justify-self: end; display: flex; align-items: center; gap: 16px; }
 .instagram-link { display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; width: 44px; height: 44px; color: var(--c-navy); transition: color .2s ease, opacity .2s ease; }
 .instagram-link svg { flex-shrink: 0; }
 .info-button { display: inline-flex; justify-content: center; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 1px solid transparent; border-radius: 9px; background: var(--c-teal); color: white; font-size: 13px; font-weight: 550; white-space: nowrap; transition: background-color .2s ease, box-shadow .2s ease; }
@@ -146,6 +146,7 @@ onBeforeUnmount(() => {
 @media (max-width: 1120px) {
   .airsense-header { --header-height: 64px; }
   .airsense-header.is-scrolled { --header-height: 60px; }
+  .header-inner { display: flex; }
   .header-controls { margin-left: auto; gap: 12px; }
   .utility-link { display: none; }
   .navigation-toggle { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; width: 44px; height: 44px; padding: 10px; border: 1px solid #deeaeb; border-radius: 50%; background: transparent; }
@@ -161,7 +162,7 @@ onBeforeUnmount(() => {
   .mobile-account-links a, .mobile-account-links button { display: inline-flex; align-items: center; min-height: 44px; padding: 8px; border: 0; background: transparent; color: var(--c-navy); font-size: 13px; }
 }
 @media (max-width: 480px) {
-  .airsense-header { width: calc(100% - 20px); top: 10px; margin-top: 10px; }
+  .airsense-header { --header-offset: 10px; width: calc(100% - 20px); }
   .header-inner { width: calc(100% - 24px); gap: 8px; }
   .header-brand { gap: 3px; }
   .header-brand img { width: 34px; height: 34px; }
@@ -188,4 +189,5 @@ onBeforeUnmount(() => {
 @media (prefers-reduced-motion: reduce) {
   *, *::after { transition: none !important; animation: none !important; }
 }
+.airsense-header::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: 32px; clip-path: var(--surface-clip, inset(0 round 32px)); background: linear-gradient(180deg, rgba(255,255,255,.5), transparent 38%, transparent 65%, rgba(255,255,255,.16)); box-shadow: inset 0 1px 1px rgba(255,255,255,.95), inset 0 -1px 1px rgba(255,255,255,.65); pointer-events: none; }
 </style>

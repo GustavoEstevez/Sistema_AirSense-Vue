@@ -6,8 +6,8 @@ const animated = ref(false)
 const carousel = ref(null)
 const activeSlide = ref(0)
 const isPlaying = ref(true)
-const slideDuration = 8000
-const transitionDuration = 1100
+const slideDuration = 5500
+const transitionDuration = 800
 const playbackProgress = ref(0)
 let autoplayTimer
 let elapsedPlayback = 0
@@ -203,7 +203,7 @@ onMounted(() => {
       observer.unobserve(entry.target)
     }
   }, { threshold: .12 })
-  section.value.querySelectorAll('[data-reveal]').forEach(element => observer.observe(element))
+  section.value.querySelectorAll('[data-reveal], [data-reveal-controls]').forEach(element => observer.observe(element))
 })
 onBeforeUnmount(() => {
   observer?.disconnect()
@@ -240,7 +240,7 @@ onBeforeUnmount(() => {
       </div>
 
     <div class="stories-content">
-      <div class="carousel-controls" @focusin="onCarouselFocus">
+      <div class="carousel-controls" data-reveal-controls @focusin="onCarouselFocus">
         <div class="carousel-dots" role="group" aria-label="Elegir problemática">
           <button v-for="(problem, index) in problems" :key="problem.image" type="button" :class="{ 'is-active': activeSlide === index }" :aria-label="`Ver ${problem.title}`" :aria-current="activeSlide === index ? 'true' : undefined" aria-controls="environment-carousel" @click="goToSlide(index)"><span class="indicator-track" aria-hidden="true"><span v-if="activeSlide === index" class="indicator-progress" :style="{ transform: `scaleX(${playbackProgress})` }"></span></span></button>
         </div>
@@ -273,14 +273,14 @@ onBeforeUnmount(() => {
 .stories-carousel:focus-visible { outline: 3px solid var(--c-teal); outline-offset: -3px; }
 .environment-story { position: relative; flex: 0 0 var(--card-width); min-width: 0; height: clamp(460px, 52vw, 640px); scroll-snap-align: center; isolation: isolate; overflow: hidden; border-radius: clamp(20px, 2.5vw, 32px); background: #17313c; color: #fff; }
 .carousel-controls { display: flex; align-items: center; justify-content: center; gap: 18px; margin-top: 20px; }
-.carousel-dots { display: flex; align-items: center; gap: 2px; }
+.carousel-dots { display: flex; align-items: center; gap: 2px; padding-inline: 8px; border-radius: 999px; background: var(--glass-surface); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
 .carousel-dots button { display: grid; place-items: center; width: 32px; height: 44px; padding: 0; border: 0; background: transparent; }
 .carousel-dots .indicator-track { position: relative; display: block; width: 7px; height: 7px; overflow: hidden; border-radius: 99px; background: #bdcdd1; transition: width .2s ease; }
 .carousel-dots button.is-active { width: 64px; }
 .carousel-dots .is-active .indicator-track { width: 54px; }
 .carousel-dots .indicator-progress { position: absolute; inset: 0; border-radius: inherit; background: var(--c-navy); transform-origin: left center; }
 .carousel-arrows { display: flex; gap: 12px; }
-.carousel-arrows button { display: grid; place-items: center; width: 44px; height: 44px; padding: 10px; border: 0; border-radius: 50%; background: #e1eaed; color: var(--c-navy); transition: background-color .2s ease; }
+.carousel-arrows button { display: grid; place-items: center; width: 44px; height: 44px; padding: 10px; border-radius: 50%; background: var(--glass-surface); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); color: var(--c-navy); transition: background-color .2s ease; }
 .carousel-arrows button:disabled { opacity: .35; cursor: default; }
 .carousel-arrows svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 .carousel-playback { margin-right: 4px; }
@@ -295,7 +295,27 @@ onBeforeUnmount(() => {
 .stories-closing p { max-width: 60ch; margin: 28px auto 0; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.25rem); line-height: 1.75; text-wrap: pretty; }
 .has-motion [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .65s ease var(--reveal-delay, 0ms), transform .65s cubic-bezier(.22, 1, .36, 1) var(--reveal-delay, 0ms); }
 .has-motion [data-reveal].is-visible { opacity: 1; transform: translateY(0); }
-@media (hover: hover) and (pointer: fine) { .environment-story:hover img { transform: scale(1.025); } .carousel-arrows button:hover:not(:disabled) { background: #d0dfe3; } }
+.has-motion .carousel-controls { opacity: 0; transform: translateY(18px) scale(.96); transition: opacity .35s ease, transform .5s cubic-bezier(.22, 1, .36, 1); }
+.has-motion .carousel-controls.is-visible,
+.has-motion .carousel-controls:focus-within { opacity: 1; transform: none; }
+.has-motion .carousel-controls.is-visible .carousel-dots { animation: controls-unfold .65s cubic-bezier(.22, 1, .36, 1) both; }
+.has-motion .carousel-controls.is-visible .carousel-arrows button { animation: control-jump .65s cubic-bezier(.22, 1, .36, 1) both; }
+.has-motion .carousel-controls.is-visible .carousel-arrows button:nth-child(1) { animation-delay: .1s; }
+.has-motion .carousel-controls.is-visible .carousel-arrows button:nth-child(2) { animation-delay: .18s; }
+.has-motion .carousel-controls.is-visible .carousel-arrows button:nth-child(3) { animation-delay: .26s; }
+.carousel-controls:focus-within .carousel-arrows button { animation: none !important; }
+@keyframes controls-unfold {
+  from { transform: translateY(12px) scaleX(.75); }
+  65% { transform: translateY(-3px) scaleX(1.025); }
+  to { transform: none; }
+}
+@keyframes control-jump {
+  from { transform: translateY(18px) scale(.8); }
+  45% { transform: translateY(-9px) scale(1.04); }
+  72% { transform: translateY(3px) scale(.98); }
+  to { transform: none; }
+}
+@media (hover: hover) and (pointer: fine) { .environment-story:hover img { transform: scale(1.025); } .carousel-arrows button:hover:not(:disabled) { background: var(--glass-hover); } }
 @media (max-width: 700px) {
   .environment-stories { --card-width: 86vw; }
   .stories-content { width: calc(100% - 40px); }
@@ -308,6 +328,9 @@ onBeforeUnmount(() => {
   .story-copy h3 { font-size: clamp(1.6rem, 6vw, 2.4rem); }
 }
 @media (prefers-reduced-motion: reduce) {
+  .has-motion .carousel-controls { opacity: 1; transform: none; transition: none; }
+  .has-motion .carousel-controls .carousel-dots,
+  .has-motion .carousel-controls .carousel-arrows button { animation: none; }
   .has-motion [data-reveal] { opacity: 1; transform: none; transition: none; }
   .environment-story img { transition: none; }
   .environment-story:hover img { transform: none; }

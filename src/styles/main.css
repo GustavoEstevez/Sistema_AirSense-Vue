@@ -1006,3 +1006,50 @@ button, input, select, textarea {
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
 }
+
+/* Shared glass surfaces for the public pages. */
+:root {
+  --glass-surface: linear-gradient(135deg, rgba(255,255,255,.78), rgba(235,248,252,.48));
+  --glass-hover: rgba(255,255,255,.85);
+  --glass-edge: rgba(255,255,255,.8);
+  --glass-shadow: inset 0 1px 1px rgba(255,255,255,.95), inset 0 -1px 1px rgba(255,255,255,.4), 0 8px 24px rgba(10,76,96,.09);
+  --glass-filter: blur(18px) saturate(1.5);
+}
+:is(.product-page, .hardware-page, .docs-page, .gallery-page) :is(.panel, .button.secondary, .button.light) {
+  background: var(--glass-surface);
+  border: 1px solid var(--glass-edge);
+  box-shadow: var(--glass-shadow);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+}
+
+:is(.product-page, .hardware-page, .docs-page, .gallery-page) .button.primary {
+  background: linear-gradient(145deg, #09899a, var(--teal-deep));
+  border: 1px solid rgba(255,255,255,.35);
+  box-shadow: inset 0 1px 1px rgba(255,255,255,.4), 0 8px 24px rgba(8,131,149,.2);
+}
+.product-page .showcase .button.secondary,
+.product-page .showcase .eyebrow.dark {
+  background: linear-gradient(135deg, rgba(255,255,255,.16), rgba(122,178,178,.08));
+  border: 1px solid rgba(255,255,255,.3);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.22), 0 6px 20px rgba(0,0,0,.1);
+  -webkit-backdrop-filter: var(--glass-filter);
+  backdrop-filter: var(--glass-filter);
+}
+.product-page .showcase .eyebrow.dark { color: #d5e9ea; }
+@media (hover: hover) {
+
+  :is(.product-page, .hardware-page, .docs-page, .gallery-page) .button.primary:hover {
+    background: linear-gradient(145deg, var(--teal-mid), var(--teal-dark));
+  }
+}
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  :root { --glass-surface: #f4fafb; --glass-hover: #fff; }
+  .product-page .showcase .button.secondary,
+  .product-page .showcase .eyebrow.dark { background: var(--navy-deep); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  :root { --glass-surface: #f4fafb; --glass-hover: #fff; --glass-filter: none; }
+  .product-page .showcase .button.secondary,
+  .product-page .showcase .eyebrow.dark { background: var(--navy-deep); }
+}
