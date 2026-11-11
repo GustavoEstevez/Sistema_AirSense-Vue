@@ -152,7 +152,7 @@ onBeforeUnmount(() => {
             </div>
 
             <div class="form-group">
-              <label for="q-spaces">Cantidad estimada de espacios / sensores</label>
+              <label for="q-spaces">Cantidad estimada de espacios / dispositivos</label>
               <select id="q-spaces" v-model="form.spaces">
                 <option value="1 a 3 espacios (Oficina)">1 a 3 espacios (Oficina / Coworking)</option>
                 <option value="4 a 10 espacios (Sede Corporativa)">4 a 10 espacios (Sede Corporativa)</option>

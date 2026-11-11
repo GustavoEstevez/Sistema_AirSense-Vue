@@ -1,7 +1,6 @@
 <script setup>
 defineProps({
   title: String,
-  sensor: String,
   value: [String, Number],
   unit: String,
   state: { type: Object, required: true },
@@ -31,7 +30,7 @@ defineProps({
           <path d="M4 8.2h10.5a2.5 2.5 0 1 0-2.2-3.7M4 12h14a2 2 0 1 1-1.8 2.9M4 15.8h7.8a2.5 2.5 0 1 1-2.2 3.7" />
         </svg>
       </div>
-      <div><h3>{{ title }}</h3><p>{{ sensor }}</p></div>
+      <div><h3>{{ title }}</h3></div>
     </div>
     <div class="metric-number">
       <strong>{{ value ?? '—' }}</strong><span>{{ unit }}</span>

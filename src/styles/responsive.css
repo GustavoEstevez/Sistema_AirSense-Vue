@@ -3,7 +3,7 @@
 .page-width { width: min(1180px, calc(100% - var(--page-gutter) * 2)); }
 .app-shell, main { min-width: 0; }
 :where(.panel, .form-group, .admin-toolbar label,
-  .showcase-grid > *, .split-hero > *, .account-grid > *,
+  .showcase-grid > *, .account-grid > *,
   .dashboard-two-cols > *, .footer-grid > *) { min-width: 0; }
 :where(h1, h2, h3, h4, p, li, .quote-summary, .account-meta, .footer-bottom) {
   overflow-wrap: anywhere;
@@ -20,18 +20,13 @@
 .state-pill { max-width: 100%; }
 .metric-number { flex-wrap: wrap; }
 .chart-head { gap: 10px; flex-wrap: wrap; }
-.dashboard-meta { gap: 12px; flex-wrap: wrap; } .spec-table-wrap, .comparison-table-wrap, .admin-table-wrap {
+.dashboard-meta { gap: 12px; flex-wrap: wrap; }  .admin-table-wrap {
   max-width: 100%; overflow-x: auto; overscroll-behavior-inline: contain;
 }
-.spec-table, .comparison-table { min-width: 580px; }
 .quote-modal-overlay { padding: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left)); }
 .quote-modal { max-height: calc(100dvh - 32px); overscroll-behavior: contain; }
 .quote-modal h2 { padding-right: 24px; }
 .quote-modal .close-btn { width: 44px; height: 44px; top: 8px; right: 8px; }
-.lightbox { padding: 64px 16px 24px; overflow-y: auto; }
-.lightbox img { max-width: 100%; max-height: 72dvh; object-fit: contain; }
-.lightbox button { width: 44px; height: 44px; right: 12px; top: 12px; }
-.lightbox p { text-align: center; }
 .pagination { gap: 12px; flex-wrap: wrap; }
 .pagination button { width: 44px; height: 44px; }
 
@@ -43,18 +38,12 @@
   .site-footer .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 1100px) {
-  .split-hero { gap: 32px; }
   .metrics-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .environment-card { grid-column: 1 / -1; min-height: 220px; }
   .showcase-grid { gap: 32px; }
 }
 @media (max-width: 820px) {
-  .hardware-page .split-hero, .gallery-hero { padding-top: 48px; }
-  .hardware-page .split-hero { padding-bottom: 48px; }
-  .split-hero h1, .hardware-page .split-hero h1, .gallery-hero h1 {
-    font-size: clamp(2rem, 6.5vw, 3.8rem); line-height: 1.08; letter-spacing: -.04em;
-  }
-  .showcase, .dark-band, .charts-section { padding-block: 56px; }
+  .showcase, .charts-section { padding-block: 56px; }
   .showcase-img-wrap img { transform: none; }
   .site-footer { padding-top: 48px; }
   .footer-grid { gap: 32px; }
@@ -78,7 +67,7 @@
   .email-panel input, .email-panel button { min-height: 48px; border-radius: 10px; }
 }
 @media (max-width: 560px) {
-  .metrics-grid, .charts-grid, .feature-grid, .hardware-grid, .steps-grid{
+  .metrics-grid, .charts-grid, .feature-grid, .hardware-grid{
     grid-template-columns: minmax(0, 1fr);
   }
   .environment-card { grid-column: auto; }
@@ -87,12 +76,11 @@
   .connection-card { width: 100%; }
   .metric-card, .environment-card { min-height: 220px; }
   .metric-number strong { font-size: 2.5rem; }
-  .recommendations, .email-panel, .chart-card, .steps-grid article { padding: 22px 18px; }
+  .recommendations, .email-panel, .chart-card { padding: 22px 18px; }
   .hero-actions { flex-direction: column; align-items: stretch; }
   .hero-actions > * { width: 100%; }
   .hero-facts { gap: 16px; }
   .hero-facts > div { flex: 1 1 80px; }
-  .gallery-grid { grid-auto-rows: clamp(220px, 65vw, 340px); }
   .cta-section { width: 100%; margin-inline: 0; padding: 44px 20px; }
   .cta-section h2 { font-size: clamp(1.8rem, 7vw, 2.5rem); line-height: 1.15; }
   .cta-section .button { width: 100%; }

@@ -12,7 +12,6 @@ import DeviceDetailSection from '../components/DeviceDetailSection.vue'
       <div class="product-hero-copy page-width">
         <h1 id="product-hero-title">Hacemos visible lo invisible.</h1>
         <p>AirSense monitorea las condiciones ambientales para acercarte información que antes pasaba desapercibida.</p>
-        <RouterLink to="/hardware/" class="hero-learn-more">Conocer más</RouterLink>
       </div>
       <video
         class="product-hero-video"
@@ -86,50 +85,6 @@ import DeviceDetailSection from '../components/DeviceDetailSection.vue'
   font-weight: 400;
   line-height: 1.5;
   text-wrap: pretty;
-}
-.hero-learn-more {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 44px;
-  margin-top: 24px;
-  padding: 11px 24px;
-  border: 1px solid rgba(255, 255, 255, .75);
-  border-radius: 999px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, .62), rgba(235, 248, 252, .3));
-  -webkit-backdrop-filter: blur(20px) saturate(1.65);
-  backdrop-filter: blur(20px) saturate(1.65);
-  box-shadow: inset 0 1px 1px rgba(255, 255, 255, .95), inset 0 -1px 1px rgba(255, 255, 255, .45), 0 5px 18px rgba(16, 39, 53, .1);
-  color: var(--c-navy);
-  font-size: 1rem;
-  font-weight: 500;
-  line-height: 1.4;
-  transition: background-color .2s ease, box-shadow .2s ease, transform .2s ease;
-}
-.hero-learn-more:focus-visible {
-  outline: 3px solid var(--c-navy);
-  outline-offset: 4px;
-}
-@media (hover: hover) {
-  .hero-learn-more:hover {
-    background-color: rgba(255, 255, 255, .3);
-    box-shadow: inset 0 1px 1px rgba(255, 255, 255, 1), inset 0 -1px 1px rgba(255, 255, 255, .55), 0 8px 24px rgba(16, 39, 53, .14);
-    transform: translateY(-2px);
-  }
-}
-.hero-learn-more:active { transform: translateY(0); }
-@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-  .hero-learn-more { background: #edf6f8; }
-}
-@media (prefers-reduced-transparency: reduce) {
-  .hero-learn-more {
-    background: #edf6f8;
-    -webkit-backdrop-filter: none;
-    backdrop-filter: none;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .hero-learn-more { transition: none; transform: none; }
 }
 .product-hero-video {
   grid-area: 1 / 1;

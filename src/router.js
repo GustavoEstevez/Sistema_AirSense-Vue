@@ -13,9 +13,7 @@ const router = createRouter({
   },
   routes: [
     { path: '/', name: 'producto', component: ProductView, meta: { title: 'Inicio' } },
-    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard', requiresAuth: Capacitor.isNativePlatform() } },
-    { path: '/hardware/', alias: '/clasico/', name: 'hardware', component: () => import('./views/ClassicView.vue'), meta: { title: 'Producto' } },
-    { path: '/instalaciones/', alias: '/galeria/', name: 'instalaciones', component: () => import('./views/GalleryView.vue'), meta: { title: 'Instalaciones' } },
+    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard', requiresAuth: true } },
     { path: '/cuenta/ingresar/', name: 'ingresar', component: () => import('./views/AuthView.vue'), meta: { title: 'Iniciar sesión', guestOnly: true } },
     { path: '/cuenta/registro/', name: 'registro', component: () => import('./views/AuthView.vue'), meta: { title: 'Crear cuenta', guestOnly: true } },
     { path: '/cuenta/recuperar/', name: 'recuperar', component: () => import('./views/AuthView.vue'), meta: { title: 'Recuperar contraseña' } },
@@ -37,7 +35,7 @@ router.beforeEach(async (to) => {
   if (to.meta.requiresAuth && !auth.isAuthenticated.value) {
     return { name: 'ingresar', query: { redirect: to.fullPath } }
   }
-  if (auth.isAuthenticated.value && to.name !== 'verificar-2fa' && to.name !== 'recuperar' && supabase) {
+  if (to.meta.requiresAuth && auth.isAuthenticated.value && to.name !== 'verificar-2fa' && to.name !== 'recuperar' && supabase) {
     const { data: assurance } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
     if (assurance?.currentLevel === 'aal1' && assurance?.nextLevel === 'aal2') {
       return { name: 'verificar-2fa', query: { redirect: to.fullPath } }

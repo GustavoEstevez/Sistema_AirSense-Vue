@@ -2,8 +2,6 @@
 const groups = [
   { title: 'Explorá AirSense', links: [
     { label: 'Inicio', to: '/' },
-    { label: 'El dispositivo', to: '/hardware/' },
-    { label: 'Espacios e instalaciones', to: '/instalaciones/' },
     { label: 'Dashboard', to: '/dashboard/' },
   ] },
   { title: 'Tu cuenta', links: [
@@ -35,17 +33,13 @@ const groups = [
           <h2>Contacto</h2>
           <ul>
             <li><a href="mailto:airsensearg@gmail.com">airsensearg@gmail.com</a></li>
-            <li><a href="https://www.instagram.com/airsensearg/" target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span><span class="footer-sr-only"> (se abre en otra pestaña)</span></a></li>
+            <li><a href="https://www.instagram.com/airsense.ar/" target="_blank" rel="noopener noreferrer">Instagram <span aria-hidden="true">↗</span><span class="footer-sr-only"> (se abre en otra pestaña)</span></a></li>
           </ul>
           <p class="footer-location">Buenos Aires, Argentina</p>
         </div>
       </nav>
-      <div class="footer-assistance">
-        Conocé más sobre <RouterLink to="/hardware/">el dispositivo AirSense</RouterLink>.
-      </div>
       <div class="footer-copyright">
         <p>© {{ new Date().getFullYear() }} AirSense. Todos los derechos reservados.</p>
-        <span>Argentina</span>
       </div>
     </div>
   </footer>
@@ -65,8 +59,6 @@ const groups = [
 .footer-column li + li { margin-top: 10px; }
 .footer-column a { display: inline-block; padding-block: 2px; }
 .footer-location { margin: 14px 0 0; color: #56636b; }
-.footer-assistance { padding-bottom: 16px; border-bottom: 1px solid rgba(10,76,96,.14); }
-.footer-assistance a { color: var(--teal-deep); text-decoration: underline; text-underline-offset: 3px; }
 .footer-copyright { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; padding-top: 16px; font-size: 11px; }
 .footer-copyright p { margin: 0; }
 .footer-sr-only { position: absolute; width: 1px; height: 1px; padding: 0; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

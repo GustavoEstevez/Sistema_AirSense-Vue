@@ -72,11 +72,11 @@ watch(
 )
 
 const cards = computed(() => [
-  { key: 'temperature', title: 'Temperatura', sensor: 'Sensor Sensirion SHT30', value: format(latest.value?.temperature), unit: '°C', icon: 'temperature', accent: '#f97316' },
-  { key: 'humidity', title: 'Humedad relativa', sensor: 'Sensor Sensirion SHT30', value: format(latest.value?.humidity), unit: '%', icon: 'humidity', accent: '#088395' },
-  { key: 'noise', title: 'Nivel sonoro', sensor: 'Micrófono MAX4466', value: format(latest.value?.noise, 0), unit: 'dB', icon: 'noise', accent: '#775cf6' },
-  { key: 'co2', title: 'Indicador del aire', sensor: 'MQ-135 · estimación en ppm', value: format(latest.value?.co2, 0), unit: 'ppm', icon: 'air', accent: '#088395' },
-].map((card) => ({ ...card, accent: '#088395', state: !fresh.value && isMeasurement(latest.value?.[card.key]) ? { level: 'unknown', label: 'Lectura anterior' } : card.key === 'co2' ? { level: 'unknown', label: isMeasurement(latest.value?.co2) ? 'Estimación MQ-135' : 'Sin datos' } : !isMeasurement(latest.value?.[card.key]) ? { level: 'unknown', label: 'Sin datos' } : analysis.value.metrics[card.key], trend: getTrend(card.key) })))
+  { key: 'temperature', title: 'Temperatura', value: format(latest.value?.temperature), unit: '°C', icon: 'temperature', accent: '#f97316' },
+  { key: 'humidity', title: 'Humedad relativa', value: format(latest.value?.humidity), unit: '%', icon: 'humidity', accent: '#088395' },
+  { key: 'noise', title: 'Nivel sonoro', value: format(latest.value?.noise, 0), unit: 'dB', icon: 'noise', accent: '#775cf6' },
+  { key: 'co2', title: 'Indicador del aire', value: format(latest.value?.co2, 0), unit: 'ppm', icon: 'air', accent: '#088395' },
+].map((card) => ({ ...card, accent: '#088395', state: !fresh.value && isMeasurement(latest.value?.[card.key]) ? { level: 'unknown', label: 'Lectura anterior' } : card.key === 'co2' ? { level: 'unknown', label: isMeasurement(latest.value?.co2) ? 'Medición estimada' : 'Sin datos' } : !isMeasurement(latest.value?.[card.key]) ? { level: 'unknown', label: 'Sin datos' } : analysis.value.metrics[card.key], trend: getTrend(card.key) })))
 
 function format(value, decimals = 1) {
   return isMeasurement(value) ? Number(value).toFixed(decimals) : '—'
@@ -191,7 +191,7 @@ async function sendEmail() {
       <div class="dashboard-meta">
         <div style="display: flex; align-items: center; gap: 10px;">
           <span class="live-indicator-dot" :class="{ 'is-online': connection.key === 'online' }"></span>
-          <p style="margin: 0;">{{ loading ? 'Recuperando telemetría de sensores…' : `Última muestra recibida: ${formatDate(latest?.recorded_at)}` }}</p>
+          <p style="margin: 0;">{{ loading ? 'Recuperando mediciones…' : `Última muestra recibida: ${formatDate(latest?.recorded_at)}` }}</p>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
           <span v-if="demoEnabled" class="demo-pill">Simulación Demostrativa</span>
@@ -204,7 +204,7 @@ async function sendEmail() {
         <article :key="'environment'" class="environment-card panel" :data-state="fresh ? analysis.level : 'unknown'">
           <div class="environment-icon" aria-hidden="true">{{ latest ? '↗' : '…' }}</div>
           <div><h3>{{ latest ? 'Tu entorno, medido.' : 'Esperando tu primera lectura.' }}</h3>
-          <p>{{ latest ? 'Consultá cada variable y su evolución. El MQ-135 ofrece una estimación del aire, no una medición verificada de CO₂.' : 'Las métricas aparecerán cuando tu estación envíe datos.' }}</p></div>
+          <p>{{ latest ? 'Consultá cada variable y su evolución. El indicador del aire es una estimación, no una medición verificada de CO₂.' : 'Las métricas aparecerán cuando tu estación envíe datos.' }}</p></div>
           <span>{{ connection.label }}</span>
         </article>
       </TransitionGroup>

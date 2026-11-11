@@ -27,7 +27,7 @@ const uptime = computed(() => {
 
 const battery = computed(() => {
   const value = Number(props.device?.battery_percent)
-  return props.device?.battery_percent != null && Number.isFinite(value) ? `${Math.round(value)} %` : 'Sensor no instalado'
+  return props.device?.battery_percent != null && Number.isFinite(value) ? `${Math.round(value)} %` : 'Dato no disponible'
 })
 </script>
 

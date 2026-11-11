@@ -16,6 +16,12 @@ const forgotMode = ref(false)
 const form = reactive({ firstName: '', lastName: '', email: '', password: '', confirm: '' })
 
 const mode = computed(() => route.name === 'registro' ? 'register' : route.name === 'recuperar' ? 'recovery' : 'login')
+const redirect = computed(() => {
+  const target = route.query.redirect
+  return typeof target === 'string' && target.startsWith('/') && !target.startsWith('//')
+    ? target : (nativeApp ? '/dashboard/' : '/panel/')
+})
+const authQuery = computed(() => route.query.redirect ? { redirect: redirect.value } : {})
 const title = computed(() => mode.value === 'register' ? 'Crear una cuenta' : mode.value === 'recovery' ? 'Elegí una nueva contraseña' : forgotMode.value ? 'Recuperar acceso' : 'Ingresar a AirSense')
 
 watch(() => route.name, () => {
@@ -50,7 +56,7 @@ async function submit() {
   try {
     if (mode.value === 'register') {
       const data = await auth.signUp(form)
-      if (data.session) await router.replace(nativeApp ? '/dashboard/' : '/panel/')
+      if (data.session) await router.replace(redirect.value)
       else notice.value = 'Cuenta creada. Revisá tu correo para confirmar el registro antes de ingresar.'
     } else if (mode.value === 'recovery') {
       await auth.updatePassword(form.password)
@@ -61,7 +67,7 @@ async function submit() {
       notice.value = 'Si existe una cuenta con ese correo, vas a recibir un enlace para recuperar el acceso.'
     } else {
       await auth.signIn(form.email, form.password)
-      await router.replace(String(route.query.redirect || (nativeApp ? '/dashboard/' : '/panel/')))
+      await router.replace(redirect.value)
     }
   } catch (submitError) {
     error.value = submitError?.message || 'No pudimos completar la operación.'
@@ -77,6 +83,7 @@ async function submit() {
       <RouterLink to="/" class="auth-brand">Air<span>Sense</span>™</RouterLink>
       <span class="section-kicker">ACCESO SEGURO</span>
       <h1>{{ title }}</h1>
+      <p v-if="route.query.redirect === '/dashboard/' && mode !== 'recovery'" class="form-notice">Para acceder al dashboard, iniciá sesión o creá una cuenta.</p>
       <p class="auth-lead">
         {{ mode === 'register' ? 'Registrate para acceder a la telemetría y las funciones habilitadas.' : mode === 'recovery' ? 'El enlace temporal validó tu identidad. Definí una contraseña segura.' : forgotMode ? 'Te enviaremos un enlace temporal sin revelar si la cuenta existe.' : 'Accedé con tu correo electrónico y contraseña.' }}
       </p>
@@ -113,9 +120,9 @@ async function submit() {
 
       <div v-if="mode === 'login'" class="auth-links">
         <button type="button" @click="forgotMode = !forgotMode">{{ forgotMode ? 'Volver al inicio de sesión' : '¿Olvidaste tu contraseña?' }}</button>
-        <RouterLink to="/cuenta/registro/">Crear una cuenta</RouterLink>
+        <RouterLink :to="{ name: 'registro', query: authQuery }">Crear una cuenta</RouterLink>
       </div>
-      <div v-else-if="mode === 'register'" class="auth-links single"><RouterLink to="/cuenta/ingresar/">Ya tengo una cuenta</RouterLink></div>
+      <div v-else-if="mode === 'register'" class="auth-links single"><RouterLink :to="{ name: 'ingresar', query: authQuery }">Ya tengo una cuenta</RouterLink></div>
     </section>
   </div>
 </template>

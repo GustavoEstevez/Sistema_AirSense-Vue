@@ -17,6 +17,11 @@ function updateTitle() {
 }
 
 onMounted(updateTitle)
+watch(auth.isAuthenticated, (authenticated) => {
+  if (!authenticated && route.meta.requiresAuth) {
+    router.replace({ name: 'ingresar', query: { redirect: route.fullPath } })
+  }
+})
 watch(() => auth.passwordRecovery.value, (recovering) => {
   if (recovering && route.name !== 'recuperar') router.replace('/cuenta/recuperar/')
 }, { immediate: true })

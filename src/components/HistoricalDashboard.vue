@@ -119,7 +119,7 @@ onBeforeUnmount(() => { ++request; controller?.abort() })
         <SparkChart title="Temperatura" :readings="chartReadings" field="temperature" unit="°C" color="#088395" :reference="26" :loading="loading" />
         <SparkChart title="Humedad relativa" :readings="chartReadings" field="humidity" unit="%" color="#088395" :reference="60" :loading="loading" />
         <SparkChart title="Nivel sonoro" :readings="chartReadings" field="noise" unit="dB" color="#088395" :reference="50" :loading="loading" />
-        <SparkChart title="Indicador del aire · MQ-135" :readings="chartReadings" field="co2" unit="ppm" color="#088395" :reference="800" :loading="loading" />
+        <SparkChart title="Indicador del aire · estimado" :readings="chartReadings" field="co2" unit="ppm" color="#088395" :reference="800" :loading="loading" />
       </div>
     </div>
   </section>
