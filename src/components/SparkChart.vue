@@ -1,6 +1,6 @@
 <script setup>
-import { computed, ref } from 'vue'
-import { isMeasurement } from '../lib/dashboardPresentation'
+import { computed, ref, watch } from 'vue'
+import { chartTimeline, nearestTimePoint } from '../lib/chartTimeline'
 
 const props = defineProps({
   title: String,
@@ -12,9 +12,12 @@ const props = defineProps({
   loading: Boolean,
 })
 
-const samples = computed(() => props.readings.filter(item => isMeasurement(item[props.field])))
+const timeline = computed(() => chartTimeline(props.readings, props.field))
+const samples = computed(() => timeline.value.samples)
 const values = computed(() => samples.value.map(item => Number(item[props.field])))
 const selectedPoint = ref(null)
+watch(samples, () => { selectedPoint.value = null })
+const timeFormat = new Intl.DateTimeFormat('es-AR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' })
 const inspected = computed(() => selectedPoint.value == null ? null : samples.value[selectedPoint.value])
 const inspectedLabel = computed(() => {
   if (!inspected.value) return ''
@@ -24,7 +27,8 @@ const inspectedLabel = computed(() => {
 })
 function inspect(event) {
   const rect = event.currentTarget.getBoundingClientRect()
-  selectedPoint.value = Math.max(0, Math.min(values.value.length - 1, Math.round((event.clientX - rect.left) / rect.width * (values.value.length - 1))))
+  if (!rect.width) return
+  selectedPoint.value = nearestTimePoint(timeline.value.positions, (event.clientX - rect.left) / rect.width * 100)
 }
 function navigate(event) {
   if (!['ArrowLeft', 'ArrowRight', 'Home', 'End'].includes(event.key)) return
@@ -41,7 +45,7 @@ const range = computed(() => {
   return { min: min - padding, max: max + padding }
 })
 const points = computed(() => values.value.map((value, index) => {
-  const x = values.value.length === 1 ? 50 : (index / (values.value.length - 1)) * 100
+  const x = timeline.value.positions[index]
   const y = 92 - ((value - range.value.min) / (range.value.max - range.value.min)) * 82
   return `${x.toFixed(2)},${y.toFixed(2)}`
 }).join(' '))
@@ -66,10 +70,17 @@ const last = computed(() => values.value.at(-1))
       </defs>
       <line v-for="y in [10, 51, 92]" :key="y" x1="0" x2="100" :y1="y" :y2="y" class="chart-grid-line" />
       <line v-if="referenceY != null" x1="0" x2="100" :y1="referenceY" :y2="referenceY" class="reference-line" />
-      <polygon v-if="points" :points="`${points} 100,100 0,100`" :fill="`url(#fill-${field})`" />
+      <polygon v-if="values.length > 1" :points="`${points} ${timeline.positions.at(-1)},100 ${timeline.positions[0]},100`" :fill="`url(#fill-${field})`" />
       <polyline v-if="points" :points="points" fill="none" :stroke="color" stroke-width="2.4" vector-effect="non-scaling-stroke" />
-      <line v-if="inspected" :x1="values.length === 1 ? 50 : selectedPoint / (values.length - 1) * 100" :x2="values.length === 1 ? 50 : selectedPoint / (values.length - 1) * 100" y1="0" y2="100" class="chart-cursor" />
+      <ellipse v-if="values.length === 1" :cx="timeline.positions[0]" :cy="92 - ((values[0] - range.min) / (range.max - range.min)) * 82" rx=".6" ry="1.5" :fill="color" />
+      <line v-if="inspected" :x1="timeline.positions[selectedPoint]" :x2="timeline.positions[selectedPoint]" y1="0" y2="100" class="chart-cursor" />
     </svg>
+    <div v-if="values.length && !loading" class="chart-time-axis"><span>{{ timeFormat.format(timeline.start) }}</span><span>{{ timeFormat.format(timeline.end) }}</span></div>
     <div v-if="values.length && !loading" class="chart-scale"><span>{{ range.min.toFixed(0) }}</span><span>{{ values.length }} lecturas · mín. / máx. de escala</span><span>{{ range.max.toFixed(0) }}</span></div>
   </article>
 </template>
+
+<style scoped>
+.chart-time-axis { display: flex; justify-content: space-between; gap: 12px; font-size: .75rem; color: var(--muted); }
+.chart-time-axis span:last-child { text-align: right; }
+</style>

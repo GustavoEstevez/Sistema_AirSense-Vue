@@ -15,7 +15,6 @@ const router = createRouter({
     { path: '/', name: 'producto', component: ProductView, meta: { title: 'Inicio' } },
     { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard', requiresAuth: Capacitor.isNativePlatform() } },
     { path: '/hardware/', alias: '/clasico/', name: 'hardware', component: () => import('./views/ClassicView.vue'), meta: { title: 'Producto' } },
-    { path: '/documentacion/', name: 'documentacion', component: () => import('./views/DocumentationView.vue'), meta: { title: 'Cómo funciona' } },
     { path: '/instalaciones/', alias: '/galeria/', name: 'instalaciones', component: () => import('./views/GalleryView.vue'), meta: { title: 'Instalaciones' } },
     { path: '/cuenta/ingresar/', name: 'ingresar', component: () => import('./views/AuthView.vue'), meta: { title: 'Iniciar sesión', guestOnly: true } },
     { path: '/cuenta/registro/', name: 'registro', component: () => import('./views/AuthView.vue'), meta: { title: 'Crear cuenta', guestOnly: true } },

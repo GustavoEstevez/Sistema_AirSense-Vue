@@ -6,12 +6,6 @@ const groups = [
     { label: 'Espacios e instalaciones', to: '/instalaciones/' },
     { label: 'Dashboard', to: '/dashboard/' },
   ] },
-  { title: 'Tecnología', links: [
-    { label: 'Cómo funciona', to: '/documentacion/' },
-    { label: 'Conectividad y arquitectura', to: '/documentacion/#arquitectura' },
-    { label: 'Sensores y mediciones', to: '/documentacion/#rangos' },
-    { label: 'Instalación', to: '/documentacion/#instalacion' },
-  ] },
   { title: 'Tu cuenta', links: [
     { label: 'Iniciar sesión', to: '/cuenta/ingresar/' },
     { label: 'Crear una cuenta', to: '/cuenta/registro/' },
@@ -47,7 +41,7 @@ const groups = [
         </div>
       </nav>
       <div class="footer-assistance">
-        Conocé más sobre <RouterLink to="/hardware/">el dispositivo AirSense</RouterLink> o consultá <RouterLink to="/documentacion/">cómo funciona</RouterLink>.
+        Conocé más sobre <RouterLink to="/hardware/">el dispositivo AirSense</RouterLink>.
       </div>
       <div class="footer-copyright">
         <p>© {{ new Date().getFullYear() }} AirSense. Todos los derechos reservados.</p>
@@ -65,7 +59,7 @@ const groups = [
 .footer-wordmark img { width: 44px; height: 44px; object-fit: contain; }
 .footer-brand-name > span { color: var(--c-teal); }
 .footer-intro p { margin: 0; }
-.footer-directory { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 28px; padding: 28px 0 32px; }
+.footer-directory { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; padding: 28px 0 32px; }
 .footer-column h2 { margin: 0 0 12px; color: #273b43; font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0; line-height: 1.5; }
 .footer-column ul { list-style: none; margin: 0; padding: 0; }
 .footer-column li + li { margin-top: 10px; }

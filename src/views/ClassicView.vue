@@ -43,7 +43,6 @@ const comparison = [
         </p>
         <div class="hero-actions">
           <button type="button" class="button primary" @click="showQuote = true">Solicitar Ficha y Cotización →</button>
-          <RouterLink to="/documentacion/" class="button secondary">Ver integración IT</RouterLink>
         </div>
         <div class="hero-facts">
           <div><strong>3</strong><span>Sensores calibrados</span></div>

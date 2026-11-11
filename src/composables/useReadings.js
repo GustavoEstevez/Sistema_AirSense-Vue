@@ -1,5 +1,7 @@
-import { computed, onBeforeUnmount, ref, unref, watch } from 'vue'
+import { computed, onBeforeUnmount, onMounted, ref, unref, watch } from 'vue'
 import { supabase, supabaseConfigured } from '../lib/supabase'
+
+import { isFreshReading, mergeReadings } from '../lib/dashboardPresentation'
 
 const demoEnabled = import.meta.env.VITE_ENABLE_DEMO === 'true'
 
@@ -22,28 +24,25 @@ export function useReadings(deviceId) {
   const error = ref('')
   const realtimeConnected = ref(false)
   let channel
-
+  let generation = 0
+  let request = 0
+  let disposed = false
+  const clock = ref(Date.now())
+  let timer
   const latest = computed(() => readings.value.at(-1) ?? null)
-  const stationOnline = computed(() => {
-    if (demoEnabled) return true
-    if (!latest.value) return false
-    const timestamp = new Date(latest.value.recorded_at).getTime()
-    return Date.now() - timestamp < 30_000
-  })
+  const stationOnline = computed(() => demoEnabled || isFreshReading(latest.value, clock.value))
 
   async function load() {
-    if (!supabase) {
+    const selectedId = unref(deviceId)
+    const context = generation
+    const pending = ++request
+    const current = () => !disposed && context === generation && pending === request && selectedId === unref(deviceId)
+    if (!supabase || !selectedId || demoEnabled) {
       loading.value = false
       return
     }
     loading.value = true
     error.value = ''
-    const selectedId = unref(deviceId)
-    if (!selectedId) {
-      readings.value = []
-      loading.value = false
-      return
-    }
     try {
       const { data, error: queryError } = await supabase
         .from('sensor_readings')
@@ -51,48 +50,61 @@ export function useReadings(deviceId) {
         .eq('device_id', selectedId)
         .order('recorded_at', { ascending: false })
         .limit(60)
+      if (!current()) return
       if (queryError) throw queryError
-      readings.value = [...(data ?? [])].reverse()
+      readings.value = mergeReadings(data ?? [], readings.value, selectedId)
     } catch (loadError) {
-      error.value = loadError?.message || 'No se pudieron recuperar las lecturas.'
+      if (current()) error.value = loadError?.message || 'No se pudieron recuperar las lecturas.'
     } finally {
-      loading.value = false
+      if (current()) loading.value = false
     }
   }
 
-  function subscribe() {
-    if (!supabase) return
-    const selectedId = unref(deviceId)
-    if (!selectedId) return
-    channel = supabase
-      .channel(`airsense-readings-${selectedId}-${crypto.randomUUID()}`)
-      .on(
-        'postgres_changes',
-        { event: 'INSERT', schema: 'public', table: 'sensor_readings', filter: `device_id=eq.${selectedId}` },
-        ({ new: reading }) => {
-          readings.value = [...readings.value.slice(-59), reading]
-          error.value = ''
-        },
-      )
-      .subscribe((status) => { realtimeConnected.value = status === 'SUBSCRIBED' })
-  }
-
-  watch(() => unref(deviceId), async (next, previous) => {
+  watch(() => unref(deviceId), (selectedId) => {
+    const context = ++generation
+    ++request
+    const previous = channel
+    channel = undefined
+    if (previous && supabase) void supabase.removeChannel(previous)
+    readings.value = []
+    error.value = ''
+    loading.value = false
+    realtimeConnected.value = false
     if (demoEnabled) {
-      readings.value = makeDemoReadings(next || 'airsense-demo')
-      loading.value = false
+      readings.value = makeDemoReadings(selectedId || 'airsense-demo')
       return
     }
-    if (next === previous && channel) return
-    if (channel && supabase) await supabase.removeChannel(channel)
-    channel = undefined
-    readings.value = []
-    realtimeConnected.value = false
-    await load()
-    subscribe()
-  }, { immediate: true })
+    if (!supabase || !selectedId) return
+    const current = () => !disposed && context === generation && selectedId === unref(deviceId)
+    channel = supabase
+      .channel(`airsense-readings-${selectedId}-${crypto.randomUUID()}`)
+      .on('postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'sensor_readings', filter: `device_id=eq.${selectedId}` },
+        ({ new: reading }) => {
+          if (!current()) return
+          readings.value = mergeReadings(readings.value, [reading], selectedId)
+        })
+      .subscribe((status) => {
+        if (!current()) return
+        realtimeConnected.value = status === 'SUBSCRIBED'
+        // Refresh the snapshot on each successful subscription, including reconnects.
+        if (status === 'SUBSCRIBED') void load()
+      })
+    void load()
+  }, { immediate: true, flush: 'sync' })
+
+  function reconnect() { void load() }
+  onMounted(() => {
+    timer = window.setInterval(() => { clock.value = Date.now() }, 5000)
+    window.addEventListener('online', reconnect)
+  })
   onBeforeUnmount(() => {
-    if (channel && supabase) supabase.removeChannel(channel)
+    disposed = true
+    ++generation
+    ++request
+    clearInterval(timer)
+    window.removeEventListener('online', reconnect)
+    if (channel && supabase) void supabase.removeChannel(channel)
   })
 
   return {
