@@ -13,6 +13,7 @@ import { useLocalAlerts } from '../composables/useLocalAlerts'
 import { useAuth } from '../composables/useAuth'
 import { classifyReading } from '../lib/environment'
 import { supabase } from '../lib/supabase'
+import { edgeFunctionErrorMessage } from '../lib/edgeFunctionError'
 import { connectionStatus, isFreshReading, isMeasurement, measurementTrend } from '../lib/dashboardPresentation'
 
 const deviceManager = useDevices()
@@ -26,6 +27,7 @@ const {
   demoEnabled,
   reload,
   realtimeConnected,
+  stationOnline,
 } = useReadings(deviceManager.selectedDeviceId)
 
 const showQuote = ref(false)
@@ -34,8 +36,8 @@ const localAlerts = useLocalAlerts(deviceManager.selectedDeviceId)
 const networkOnline = ref(navigator.onLine)
 const clock = ref(Date.now())
 let statusTimer
-const connection = computed(() => connectionStatus({ online: networkOnline.value, error: error.value, configured, demo: demoEnabled, latest: latest.value, now: clock.value }))
-const fresh = computed(() => demoEnabled || isFreshReading(latest.value, clock.value))
+const connection = computed(() => connectionStatus({ online: networkOnline.value, error: error.value, configured, demo: demoEnabled, latest: latest.value, active: stationOnline.value, now: clock.value }))
+const fresh = computed(() => demoEnabled || stationOnline.value)
 const stationName = computed(() => deviceManager.selectedDevice.value?.display_name || deviceManager.selectedDevice.value?.id || 'Sin estación seleccionada')
 
 const email = ref('')
@@ -116,7 +118,7 @@ async function sendEmail() {
       body: { email: email.value, readingId: latest.value.id },
     })
     if (pending !== emailRequest) return
-    if (functionError) throw functionError
+    if (functionError) throw new Error(await edgeFunctionErrorMessage(functionError, 'No pudimos conectar con el servicio de informes. Intentá nuevamente.'))
     emailSuccess.value = true
     emailMessage.value = 'Informe de auditoría despachado correctamente por la Edge Function.'
     email.value = ''
@@ -222,7 +224,7 @@ async function sendEmail() {
             Enviá un resumen de las mediciones actuales al correo que elijas.
           </p>
           <form @submit.prevent="sendEmail">
-            <label for="reading-email">Correo Electrónico Corporativo</label>
+            <label for="reading-email">Correo donde querés recibir el informe</label>
             <div>
               <input
                 id="reading-email"

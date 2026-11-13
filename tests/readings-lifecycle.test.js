@@ -2,6 +2,7 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { readFile } from 'node:fs/promises'
 import { createRenderer, reactive, ref } from 'vue'
+import { READING_FRESHNESS_MS } from '../src/lib/dashboardPresentation.js'
 
 // Exercise the real composable with a controlled Supabase transport and Vue lifecycle.
 test('station changes, late snapshots, realtime overlap and reconnect stay isolated', async () => {
@@ -31,6 +32,7 @@ test('station changes, late snapshots, realtime overlap and reconnect stay isola
     source = source.replace("from 'vue'", `from '${import.meta.resolve('vue')}'`)
       .replace("import { supabase, supabaseConfigured } from '../lib/supabase'", 'const supabase = globalThis.__readingsTransport; const supabaseConfigured = true')
       .replace("from '../lib/dashboardPresentation'", `from '${new URL('../src/lib/dashboardPresentation.js', import.meta.url).href}'`)
+      .replace("import { realtimeChannelName } from '../lib/realtimeChannel'", "const realtimeChannelName = prefix => prefix + '-test'")
       .replace("import.meta.env.VITE_ENABLE_DEMO === 'true'", 'false')
     const { useReadings } = await import(`data:text/javascript;base64,${Buffer.from(source).toString('base64')}`)
     const selected = ref('A')
@@ -181,7 +183,7 @@ test('AI results and loading state cannot leak from an older station or request'
     pending[2]({ data: { recommendations: ['Snapshot from B'] } })
     await next
     assert.deepEqual(state.aiTips.value, ['Snapshot from B'])
-    props.now = Date.now() + 31000
+    props.now = Date.now() + READING_FRESHNESS_MS + 1000
     await Promise.resolve()
     assert.deepEqual(state.aiTips.value, [])
     props.fresh = false

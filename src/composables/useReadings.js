@@ -1,9 +1,11 @@
 import { computed, onBeforeUnmount, onMounted, ref, unref, watch } from 'vue'
 import { supabase, supabaseConfigured } from '../lib/supabase'
 
-import { isFreshReading, mergeReadings } from '../lib/dashboardPresentation'
+import { isFreshReading, mergeReadings, READING_FRESHNESS_MS } from '../lib/dashboardPresentation'
+import { realtimeChannelName } from '../lib/realtimeChannel'
 
 const demoEnabled = import.meta.env.VITE_ENABLE_DEMO === 'true'
+export const SNAPSHOT_REFRESH_MS = 15_000
 
 function makeDemoReadings(deviceId = 'airsense-demo') {
   const now = Date.now()
@@ -23,16 +25,20 @@ export function useReadings(deviceId) {
   const loading = ref(supabaseConfigured)
   const error = ref('')
   const realtimeConnected = ref(false)
+  const lastObservedAt = ref(0)
   let channel
   let generation = 0
   let request = 0
   let disposed = false
   const clock = ref(Date.now())
-  let timer
+  let clockTimer
+  let pollTimer
   const latest = computed(() => readings.value.at(-1) ?? null)
-  const stationOnline = computed(() => demoEnabled || isFreshReading(latest.value, clock.value))
+  const stationOnline = computed(() => demoEnabled
+    || (lastObservedAt.value > 0 && clock.value - lastObservedAt.value < READING_FRESHNESS_MS)
+    || isFreshReading(latest.value, clock.value))
 
-  async function load() {
+  async function load({ silent = false } = {}) {
     const selectedId = unref(deviceId)
     const context = generation
     const pending = ++request
@@ -41,7 +47,7 @@ export function useReadings(deviceId) {
       loading.value = false
       return
     }
-    loading.value = true
+    if (!silent) loading.value = true
     error.value = ''
     try {
       const { data, error: queryError } = await supabase
@@ -53,6 +59,7 @@ export function useReadings(deviceId) {
       if (!current()) return
       if (queryError) throw queryError
       readings.value = mergeReadings(data ?? [], readings.value, selectedId)
+      if (isFreshReading(readings.value.at(-1), Date.now())) lastObservedAt.value = Date.now()
     } catch (loadError) {
       if (current()) error.value = loadError?.message || 'No se pudieron recuperar las lecturas.'
     } finally {
@@ -67,6 +74,7 @@ export function useReadings(deviceId) {
     channel = undefined
     if (previous && supabase) void supabase.removeChannel(previous)
     readings.value = []
+    lastObservedAt.value = 0
     error.value = ''
     loading.value = false
     realtimeConnected.value = false
@@ -77,32 +85,35 @@ export function useReadings(deviceId) {
     if (!supabase || !selectedId) return
     const current = () => !disposed && context === generation && selectedId === unref(deviceId)
     channel = supabase
-      .channel(`airsense-readings-${selectedId}-${crypto.randomUUID()}`)
+      .channel(realtimeChannelName(`airsense-readings-${selectedId}`))
       .on('postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'sensor_readings', filter: `device_id=eq.${selectedId}` },
         ({ new: reading }) => {
           if (!current()) return
           readings.value = mergeReadings(readings.value, [reading], selectedId)
+          lastObservedAt.value = Date.now()
         })
       .subscribe((status) => {
         if (!current()) return
         realtimeConnected.value = status === 'SUBSCRIBED'
         // Refresh the snapshot on each successful subscription, including reconnects.
-        if (status === 'SUBSCRIBED') void load()
+        if (status === 'SUBSCRIBED') void load({ silent: true })
       })
     void load()
   }, { immediate: true, flush: 'sync' })
 
   function reconnect() { void load() }
   onMounted(() => {
-    timer = window.setInterval(() => { clock.value = Date.now() }, 5000)
+    clockTimer = window.setInterval(() => { clock.value = Date.now() }, 5000)
+    pollTimer = window.setInterval(() => { void load({ silent: true }) }, SNAPSHOT_REFRESH_MS)
     window.addEventListener('online', reconnect)
   })
   onBeforeUnmount(() => {
     disposed = true
     ++generation
     ++request
-    clearInterval(timer)
+    clearInterval(clockTimer)
+    clearInterval(pollTimer)
     window.removeEventListener('online', reconnect)
     if (channel && supabase) void supabase.removeChannel(channel)
   })
@@ -116,6 +127,7 @@ export function useReadings(deviceId) {
     demoEnabled,
     realtimeConnected,
     stationOnline,
+    lastObservedAt,
     reload: load,
   }
 }

@@ -1,7 +1,9 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, toRef } from 'vue'
+import { useSampledBattery } from '../composables/useSampledBattery'
 
 const props = defineProps({ device: { type: Object, default: null }, connection: { type: Object, default: () => ({ key: 'waiting', label: 'Esperando datos' }) } })
+const sampledBattery = useSampledBattery(toRef(props, 'device'))
 
 const signal = computed(() => {
   if (props.device?.wifi_rssi == null) return { label: 'Pendiente', bars: 0 }
@@ -26,8 +28,8 @@ const uptime = computed(() => {
 })
 
 const battery = computed(() => {
-  const value = Number(props.device?.battery_percent)
-  return props.device?.battery_percent != null && Number.isFinite(value) ? `${Math.round(value)} %` : 'Dato no disponible'
+  const value = Number(sampledBattery.value)
+  return sampledBattery.value != null && Number.isFinite(value) ? `${Math.round(value)} %` : 'Dato no disponible'
 })
 </script>
 

@@ -1,8 +1,10 @@
 <script setup>
 import { onBeforeUnmount, onMounted, ref, watch } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuth } from '../composables/useAuth'
 
 const route = useRoute()
+const auth = useAuth()
 const menuOpen = ref(false)
 const scrolled = ref(false)
 const header = ref(null)
@@ -80,9 +82,16 @@ onBeforeUnmount(() => {
 
       <nav id="airsense-navigation" class="header-navigation" :class="{ 'is-open': menuOpen }" aria-label="Navegación principal">
         <RouterLink v-for="link in links" :key="link.to" :to="link.to" class="navigation-link" :class="{ 'is-active': isActive(link) }" :aria-current="isActive(link) ? 'page' : undefined" @click="closeMenu">{{ link.label }}</RouterLink>
+        <div class="mobile-account-links">
+          <RouterLink v-if="!auth.isAuthenticated.value" to="/cuenta/ingresar/" @click="closeMenu">Iniciar sesión</RouterLink>
+          <RouterLink v-if="!auth.isAuthenticated.value" to="/cuenta/registro/" @click="closeMenu">Crear cuenta</RouterLink>
+          <RouterLink v-else to="/panel/" @click="closeMenu">Mi cuenta</RouterLink>
+        </div>
       </nav>
 
       <div class="header-controls">
+        <RouterLink v-if="!auth.isAuthenticated.value" to="/cuenta/ingresar/" class="utility-link">Iniciar sesión</RouterLink>
+        <RouterLink v-else to="/panel/" class="utility-link">Mi cuenta</RouterLink>
         <a class="instagram-link" href="https://www.instagram.com/airsense.ar/" target="_blank" rel="noopener noreferrer" aria-label="Instagram oficial de AirSense">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>
         </a>

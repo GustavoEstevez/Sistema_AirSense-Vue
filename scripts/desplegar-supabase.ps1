@@ -25,7 +25,8 @@ try {
     @{ Name = 'ingest-reading'; Extra = @('--no-verify-jwt') },
     @{ Name = 'send-reading-email'; Extra = @() },
     @{ Name = 'send-quote-email'; Extra = @() },
-    @{ Name = 'admin-users'; Extra = @() }
+    @{ Name = 'admin-users'; Extra = @() },
+    @{ Name = 'environment-recommendations'; Extra = @() }
   )
 
   foreach ($deployment in $deployments) {
@@ -36,7 +37,7 @@ try {
   }
 
   Write-Host ''
-  Write-Host 'Las cuatro Edge Functions quedaron desplegadas.' -ForegroundColor Green
+  Write-Host 'Las cinco Edge Functions quedaron desplegadas.' -ForegroundColor Green
 } finally {
   $env:SUPABASE_ACCESS_TOKEN = $null
   $token = $null

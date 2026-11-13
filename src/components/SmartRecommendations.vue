@@ -2,6 +2,7 @@
 import { computed, onBeforeUnmount, ref, watch } from 'vue'
 import { recommendations } from '../lib/environment'
 import { isFreshReading } from '../lib/dashboardPresentation'
+import { edgeFunctionErrorMessage } from '../lib/edgeFunctionError'
 import { useAuth } from '../composables/useAuth'
 import { supabase } from '../lib/supabase'
 
@@ -48,14 +49,7 @@ async function refreshWithAi() {
       body: { mode: 'recommendations', reading, region: region.value },
     })
     if (pending !== request) return
-    if (functionError) {
-      let detail = ''
-      try {
-        const payload = await functionError.context?.json()
-        detail = String(payload?.error || '')
-      } catch { /* La respuesta puede no contener JSON. */ }
-      throw new Error(detail || functionError.message)
-    }
+    if (functionError) throw new Error(await edgeFunctionErrorMessage(functionError, 'No pudimos conectar con el servicio de análisis. Intentá nuevamente.'))
     if (!Array.isArray(data?.recommendations) || !data.recommendations.length) throw new Error('La IA no devolvió recomendaciones válidas.')
     if (pending !== request || !isFreshReading(reading)) return
     aiTips.value = data.recommendations.filter(tip => typeof tip === 'string' && tip.trim()).slice(0, 4)

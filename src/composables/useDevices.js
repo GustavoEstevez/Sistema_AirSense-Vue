@@ -1,5 +1,6 @@
 import { computed, onBeforeUnmount, onMounted, ref } from 'vue'
 import { supabase, supabaseConfigured } from '../lib/supabase'
+import { realtimeChannelName } from '../lib/realtimeChannel'
 
 const STORAGE_KEY = 'airsense.selected-device.v1'
 const demoEnabled = import.meta.env.VITE_ENABLE_DEMO === 'true'
@@ -87,7 +88,7 @@ export function useDevices() {
   function subscribe() {
     if (!supabase || demoEnabled) return
     channel = supabase
-      .channel(`airsense-devices-${crypto.randomUUID()}`)
+      .channel(realtimeChannelName('airsense-devices'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'devices' }, ({ eventType, new: changed, old }) => {
         if (eventType === 'DELETE') {
           devices.value = devices.value.filter((device) => device.id !== old.id)

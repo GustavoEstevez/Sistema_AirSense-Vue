@@ -14,7 +14,7 @@ function name(device, index) {
 
 function online(device) {
   if (!device.last_seen_at) return false
-  return Date.now() - new Date(device.last_seen_at).getTime() < 45_000
+  return isFreshReading({ recorded_at: device.last_seen_at }, props.now)
 }
 </script>
 

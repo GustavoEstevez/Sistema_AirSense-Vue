@@ -1,6 +1,6 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { connectionStatus, isFreshReading, isMeasurement, measurementTrend, mergeReadings } from '../src/lib/dashboardPresentation.js'
+import { CLOCK_SKEW_TOLERANCE_MS, connectionStatus, isFreshReading, isMeasurement, measurementTrend, mergeReadings, READING_FRESHNESS_MS } from '../src/lib/dashboardPresentation.js'
 import { classifyReading, recommendations } from '../src/lib/environment.js'
 
 test('missing measurements remain missing while zero is a valid measurement', () => {
@@ -27,10 +27,11 @@ test('snapshot and realtime overlap deduplicates, sorts and isolates the selecte
   assert.equal(mergeReadings([], Array.from({ length: 80 }, (_, i) => row(String(i), 'A', i)), 'A').length, 60)
 })
 
-test('freshness uses one boundary and rejects invalid or future timestamps', () => {
+test('freshness uses one boundary and tolerates small clock differences', () => {
   const now = 100000
-  for (const age of [0, 29999]) assert.equal(isFreshReading({ recorded_at: new Date(now - age).toISOString() }, now), true)
-  for (const date of ['bad', new Date(now - 30000).toISOString(), new Date(now + 1).toISOString()]) assert.equal(isFreshReading({ recorded_at: date }, now), false)
+  for (const age of [0, 30_000, READING_FRESHNESS_MS - 1]) assert.equal(isFreshReading({ recorded_at: new Date(now - age).toISOString() }, now), true)
+  assert.equal(isFreshReading({ recorded_at: new Date(now + CLOCK_SKEW_TOLERANCE_MS).toISOString() }, now), true)
+  for (const date of ['bad', new Date(now - READING_FRESHNESS_MS).toISOString(), new Date(now + CLOCK_SKEW_TOLERANCE_MS + 1).toISOString()]) assert.equal(isFreshReading({ recorded_at: date }, now), false)
 })
 
 test('trends require two real measurements and do not turn null into zero', () => {
@@ -45,9 +46,12 @@ test('connection labels distinguish missing setup, waiting, fresh, stale, demo a
   assert.equal(connectionStatus({ ...base, configured: false }).key, 'waiting')
   const fresh = { recorded_at: new Date(now - 5000).toISOString() }
   assert.equal(connectionStatus({ ...base, latest: fresh }).key, 'online')
-  assert.equal(connectionStatus({ ...base, latest: { recorded_at: new Date(now - 30000).toISOString() } }).key, 'offline')
+  assert.equal(connectionStatus({ ...base, latest: { recorded_at: new Date(now - 30_000).toISOString() } }).key, 'online')
+  assert.equal(connectionStatus({ ...base, latest: { recorded_at: new Date(now - READING_FRESHNESS_MS).toISOString() } }).key, 'offline')
   assert.equal(connectionStatus({ ...base, latest: { recorded_at: 'bad date' } }).key, 'offline')
-  assert.equal(connectionStatus({ ...base, latest: { recorded_at: new Date(now + 1000).toISOString() } }).key, 'offline')
+  assert.equal(connectionStatus({ ...base, latest: { recorded_at: new Date(now + 1000).toISOString() } }).key, 'online')
+  assert.equal(connectionStatus({ ...base, latest: fresh, active: false }).key, 'offline')
+  assert.equal(connectionStatus({ ...base, latest: { recorded_at: 'bad date' }, active: true }).key, 'online')
   assert.equal(connectionStatus({ ...base, demo: true }).key, 'demo')
   assert.equal(connectionStatus({ ...base, error: 'Query failed', latest: fresh }).key, 'error')
   assert.equal(connectionStatus({ ...base, online: false, latest: fresh }).key, 'offline')

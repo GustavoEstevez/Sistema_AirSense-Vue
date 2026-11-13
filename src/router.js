@@ -13,8 +13,7 @@ const router = createRouter({
   },
   routes: [
     { path: '/', name: 'producto', component: ProductView, meta: { title: 'Inicio' } },
-    // Acceso público temporal: restaurar requiresAuth: true para exigir una cuenta.
-    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard', requiresAuth: false } },
+    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard', requiresAuth: true } },
     { path: '/cuenta/ingresar/', name: 'ingresar', component: () => import('./views/AuthView.vue'), meta: { title: 'Iniciar sesión', guestOnly: true } },
     { path: '/cuenta/registro/', name: 'registro', component: () => import('./views/AuthView.vue'), meta: { title: 'Crear cuenta', guestOnly: true } },
     { path: '/cuenta/recuperar/', name: 'recuperar', component: () => import('./views/AuthView.vue'), meta: { title: 'Recuperar contraseña' } },
