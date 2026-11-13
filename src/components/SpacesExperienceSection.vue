@@ -87,21 +87,21 @@ onBeforeUnmount(() => {
 <template>
   <section ref="section" class="spaces-experience" aria-labelledby="spaces-heading">
     <div class="spaces-inner">
-      <h2 id="spaces-heading">Diseñado para los<br class="desktop-break" /> espacios que importan.</h2>
+      <h2 id="spaces-heading" data-entrance>Diseñado para los<br class="desktop-break" /> espacios que importan.</h2>
 
-      <div id="space-experience" class="space-photo" :aria-label="active.label">
+      <div id="space-experience" class="space-photo" data-entrance="80" :aria-label="active.label">
         <Transition name="space-fade">
           <img :key="active.image" :src="source(active, 1440)" :srcset="sources(active)" :sizes="sizes" :alt="active.alt" :style="{ objectPosition: active.position }" width="1376" height="768" loading="lazy" decoding="async" />
         </Transition>
       </div>
 
-      <div class="space-selector-scroll">
+      <div class="space-selector-scroll" data-entrance="120">
         <div class="space-selector" role="group" aria-label="Elegí un espacio para descubrir AirSense">
           <button v-for="(space, index) in spaces" :key="space.label" :ref="el => buttons[index] = el" type="button" :aria-pressed="activeIndex === index" aria-controls="space-experience space-description" @click="selectSpace(index)" @keydown="onKeydown($event, index)">{{ space.label }}</button>
         </div>
       </div>
 
-      <div id="space-description" class="space-description" aria-live="polite" aria-atomic="true">
+      <div id="space-description" class="space-description" data-entrance="160" aria-live="polite" aria-atomic="true">
         <h3>{{ active.title }}</h3>
         <p>{{ active.description }}</p>
       </div>
@@ -119,7 +119,8 @@ onBeforeUnmount(() => {
 .space-fade-enter-active, .space-fade-leave-active { transition: opacity 320ms ease; }
 .space-fade-enter-active { z-index: 1; }
 .space-fade-enter-from, .space-fade-leave-to { opacity: 0; }
-.space-selector-scroll { overflow-x: auto; max-width: 100%; padding: 8px 5px; margin-top: clamp(24px, 3vw, 36px); scrollbar-width: thin; scrollbar-color: var(--c-mist) transparent; }
+/* Leave room for the glass shadow inside the horizontal scroll area. */
+.space-selector-scroll { overflow-x: auto; max-width: 100%; padding: 32px 24px 40px; margin-top: calc(clamp(24px, 3vw, 36px) - 24px); margin-bottom: -32px; scrollbar-width: thin; scrollbar-color: var(--c-mist) transparent; }
 .space-selector { display: flex; width: max-content; margin-inline: auto; gap: 4px; padding: 6px; border-radius: 999px; background: var(--glass-surface); border: 1px solid var(--glass-edge); box-shadow: var(--glass-shadow); -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
 .space-selector button { min-height: 44px; padding: 10px 24px; border: 0; border-radius: 999px; background: transparent; color: var(--muted, #4f7480); font-size: 15px; font-weight: 600; white-space: nowrap; transition: background-color 250ms ease, color 250ms ease; }
 .space-selector button[aria-pressed='true'] { background: linear-gradient(145deg, #17677b, var(--c-navy)); color: #fff; box-shadow: inset 0 1px 1px rgba(255,255,255,.35), 0 3px 10px rgba(10,76,96,.18); }

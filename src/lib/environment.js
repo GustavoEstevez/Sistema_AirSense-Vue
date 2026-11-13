@@ -1,3 +1,5 @@
+import { isMeasurement } from './dashboardPresentation.js'
+
 export const ranges = {
   temperature: { good: [18, 26], warning: [15, 30] },
   humidity: { good: [40, 60], warning: [30, 70] },
@@ -6,7 +8,7 @@ export const ranges = {
 }
 
 function band(value, good, warning, lowLabels, highLabels) {
-  if (!Number.isFinite(Number(value))) return { level: 'unknown', label: 'Sin datos' }
+  if (!isMeasurement(value)) return { level: 'unknown', label: 'Sin datos' }
   const n = Number(value)
   if (n < warning[0]) return { level: 'danger', label: lowLabels[1] }
   if (n > warning[1]) return { level: 'danger', label: highLabels[1] }
@@ -33,7 +35,7 @@ export function classifyReading(reading = {}) {
   if (humidity.level === 'normal') humidity.label = 'Óptima'
 
   const noiseValue = Number(reading.noise)
-  const noise = !Number.isFinite(noiseValue)
+  const noise = !isMeasurement(reading.noise)
     ? { level: 'unknown', label: 'Sin datos' }
     : noiseValue > ranges.noise.warningMax
       ? { level: 'danger', label: 'Muy ruidoso' }
@@ -42,7 +44,7 @@ export function classifyReading(reading = {}) {
         : { level: 'normal', label: 'Ruido bajo' }
 
   const co2Value = Number(reading.co2)
-  const co2 = !Number.isFinite(co2Value)
+  const co2 = !isMeasurement(reading.co2)
     ? { level: 'unknown', label: 'Sin datos' }
     : co2Value > ranges.co2.warningMax
       ? { level: 'danger', label: 'Aire viciado' }
@@ -85,7 +87,7 @@ export function recommendations(reading = {}) {
   if (state.metrics.humidity.level !== 'normal' && state.metrics.humidity.level !== 'unknown') {
     result.push(Number(reading.humidity) > 60 ? 'Ventilá para reducir la humedad acumulada.' : 'Considerá usar un humidificador o una fuente de humedad controlada.')
   }
-  if (!result.length && state.level !== 'unknown') result.push('Todo se ve bien. Mantené la ventilación habitual del espacio.')
+  if (!result.length && state.level !== 'unknown') result.push('Las variables disponibles están dentro de los rangos de referencia. Mantené la ventilación habitual del espacio.')
   if (!result.length) result.push('Encendé la estación AirSense y verificá su conexión Wi-Fi.')
   return result
 }

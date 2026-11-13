@@ -1,8 +1,10 @@
 <script setup>
-defineProps({
+import { isFreshReading } from '../lib/dashboardPresentation'
+const props = defineProps({
   devices: { type: Array, default: () => [] },
   selectedId: { type: String, default: '' },
   loading: Boolean,
+  now: { type: Number, default: () => Date.now() },
 })
 const emit = defineEmits(['select'])
 

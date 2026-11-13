@@ -172,13 +172,14 @@ function revealAll() {
 function onMotionChange(event) {
   if (event.matches) {
     revealAll()
+    pausePlayback()
   }
 }
 
 onMounted(() => {
   motionQuery = window.matchMedia('(prefers-reduced-motion: reduce)')
   motionQuery.addEventListener('change', onMotionChange)
-  isPlaying.value = true
+  isPlaying.value = !motionQuery.matches
   document.addEventListener('visibilitychange', scheduleAdvance)
   if ('IntersectionObserver' in window) {
     visibilityObserver = new IntersectionObserver(([entry]) => {
@@ -295,26 +296,9 @@ onBeforeUnmount(() => {
 .stories-closing p { max-width: 60ch; margin: 28px auto 0; color: var(--muted); font-size: clamp(1rem, 1.5vw, 1.25rem); line-height: 1.75; text-wrap: pretty; }
 .has-motion [data-reveal] { opacity: 0; transform: translateY(22px); transition: opacity .65s ease var(--reveal-delay, 0ms), transform .65s cubic-bezier(.22, 1, .36, 1) var(--reveal-delay, 0ms); }
 .has-motion [data-reveal].is-visible { opacity: 1; transform: translateY(0); }
-.has-motion .carousel-controls { opacity: 0; transform: translateY(18px) scale(.96); transition: opacity .35s ease, transform .5s cubic-bezier(.22, 1, .36, 1); }
+.has-motion .carousel-controls { opacity: 0; transform: translateY(16px); transition: opacity .65s ease, transform .65s cubic-bezier(.22, 1, .36, 1); }
 .has-motion .carousel-controls.is-visible,
 .has-motion .carousel-controls:focus-within { opacity: 1; transform: none; }
-.has-motion .carousel-controls.is-visible .carousel-dots { animation: controls-unfold .65s cubic-bezier(.22, 1, .36, 1) both; }
-.has-motion .carousel-controls.is-visible .carousel-arrows button { animation: control-jump .65s cubic-bezier(.22, 1, .36, 1) both; }
-.has-motion .carousel-controls.is-visible .carousel-arrows button:nth-child(1) { animation-delay: .1s; }
-.has-motion .carousel-controls.is-visible .carousel-arrows button:nth-child(2) { animation-delay: .18s; }
-.has-motion .carousel-controls.is-visible .carousel-arrows button:nth-child(3) { animation-delay: .26s; }
-.carousel-controls:focus-within .carousel-arrows button { animation: none !important; }
-@keyframes controls-unfold {
-  from { transform: translateY(12px) scaleX(.75); }
-  65% { transform: translateY(-3px) scaleX(1.025); }
-  to { transform: none; }
-}
-@keyframes control-jump {
-  from { transform: translateY(18px) scale(.8); }
-  45% { transform: translateY(-9px) scale(1.04); }
-  72% { transform: translateY(3px) scale(.98); }
-  to { transform: none; }
-}
 @media (hover: hover) and (pointer: fine) { .environment-story:hover img { transform: scale(1.025); } .carousel-arrows button:hover:not(:disabled) { background: var(--glass-hover); } }
 @media (max-width: 700px) {
   .environment-stories { --card-width: 86vw; }

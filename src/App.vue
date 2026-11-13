@@ -1,13 +1,16 @@
 <script setup>
-import { computed, onMounted, watch } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { useRoute, useRouter } from 'vue-router'
 import SiteHeader from './components/SiteHeader.vue'
 import SiteFooter from './components/SiteFooter.vue'
 import { useAuth } from './composables/useAuth'
+import { useScrollReveal } from './composables/useScrollReveal'
 
 const route = useRoute()
 const router = useRouter()
+const appShell = ref(null)
+useScrollReveal(appShell, () => route.name)
 const nativeApp = Capacitor.isNativePlatform()
 const auth = useAuth()
 const showNativeActions = computed(() => nativeApp && auth.isAuthenticated.value && !String(route.name || '').match(/ingresar|registro|recuperar|verificar-2fa/))
@@ -17,6 +20,11 @@ function updateTitle() {
 }
 
 onMounted(updateTitle)
+watch(auth.isAuthenticated, (authenticated) => {
+  if (!authenticated && route.meta.requiresAuth) {
+    router.replace({ name: 'ingresar', query: { redirect: route.fullPath } })
+  }
+})
 watch(() => auth.passwordRecovery.value, (recovering) => {
   if (recovering && route.name !== 'recuperar') router.replace('/cuenta/recuperar/')
 }, { immediate: true })
@@ -27,7 +35,7 @@ watch(() => route.fullPath, () => {
 </script>
 
 <template>
-  <div class="app-shell" :class="{ 'native-app': nativeApp }">
+  <div ref="appShell" class="app-shell" :class="{ 'native-app': nativeApp }">
     <SiteHeader v-if="!nativeApp" />
     <RouterLink
       v-if="showNativeActions && route.path.startsWith('/dashboard/')"

@@ -72,10 +72,10 @@ onBeforeUnmount(() => {
     <svg class="header-surface" width="100%" height="100%" aria-hidden="true">
       <path :d="surfacePath" />
     </svg>
-    <div class="header-inner">
+    <div class="header-inner" data-entrance>
       <RouterLink to="/" class="header-brand" aria-label="AirSense, inicio" @click="closeMenu">
         <img src="/assets/Logos/LogoAirSense.png" alt="" width="44" height="44" />
-        <span>Air<span class="brand-accent">Sense</span></span>
+        <span>AirSense</span>
       </RouterLink>
 
       <nav id="airsense-navigation" class="header-navigation" :class="{ 'is-open': menuOpen }" aria-label="Navegación principal">
@@ -83,7 +83,7 @@ onBeforeUnmount(() => {
       </nav>
 
       <div class="header-controls">
-        <a class="instagram-link" href="https://www.instagram.com/airsensearg/" target="_blank" rel="noopener noreferrer" aria-label="Instagram oficial de AirSense">
+        <a class="instagram-link" href="https://www.instagram.com/airsense.ar/" target="_blank" rel="noopener noreferrer" aria-label="Instagram oficial de AirSense">
           <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.7" aria-hidden="true" focusable="false"><rect x="3" y="3" width="18" height="18" rx="5" /><circle cx="12" cy="12" r="4" /><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none" /></svg>
         </a>
         <button ref="menuButton" type="button" class="navigation-toggle" :aria-expanded="menuOpen" aria-controls="airsense-navigation" :aria-label="menuOpen ? 'Cerrar navegación' : 'Abrir navegación'" @click="menuOpen = !menuOpen"><span></span><span></span></button>
@@ -118,7 +118,6 @@ onBeforeUnmount(() => {
 .header-brand { justify-self: start; display: inline-flex; flex-shrink: 0; align-items: center; gap: 8px; }
 .header-brand img { width: 44px; height: 44px; object-fit: contain; }
 .header-brand > span { font-family: var(--font-display); font-size: 21px; font-weight: 600; letter-spacing: -.9px; line-height: 1.1; }
-.brand-accent { color: var(--c-teal); }
 .header-navigation { display: flex; align-items: center; justify-content: center; gap: 20px; margin-inline: auto; }
 .navigation-link, .utility-link { position: relative; padding-block: 14px; color: var(--c-navy); font-size: 13px; font-weight: 500; white-space: nowrap; transition: color .2s ease; }
 .navigation-link::after { content: ''; position: absolute; height: 2px; left: 0; right: 0; bottom: 7px; border-radius: 2px; background: var(--c-teal); transform: scaleX(0); transition: transform .2s ease; }

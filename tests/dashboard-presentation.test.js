@@ -1,10 +1,36 @@
 import test from 'node:test'
 import assert from 'node:assert/strict'
-import { connectionStatus, isMeasurement, measurementTrend } from '../src/lib/dashboardPresentation.js'
+import { connectionStatus, isFreshReading, isMeasurement, measurementTrend, mergeReadings } from '../src/lib/dashboardPresentation.js'
+import { classifyReading, recommendations } from '../src/lib/environment.js'
 
 test('missing measurements remain missing while zero is a valid measurement', () => {
-  for (const value of [null, undefined, '', NaN, Infinity, 'invalid']) assert.equal(isMeasurement(value), false)
+  for (const value of [null, undefined, '', '   ', false, true, [], {}, NaN, Infinity, 'invalid']) assert.equal(isMeasurement(value), false)
   for (const value of [0, -1, 24.5, '52.3']) assert.equal(isMeasurement(value), true)
+})
+
+test('missing environmental values never become zero-valued critical measurements', () => {
+  for (const missing of [null, undefined, '', ' ', false]) {
+    const reading = { temperature: missing, humidity: missing, noise: missing, co2: missing }
+    const state = classifyReading(reading)
+    assert.equal(state.level, 'unknown')
+    assert.ok(Object.values(state.metrics).every(metric => metric.level === 'unknown'))
+    assert.deepEqual(recommendations(reading), ['Encendé la estación AirSense y verificá su conexión Wi-Fi.'])
+  }
+  assert.equal(classifyReading({ temperature: 0 }).metrics.temperature.level, 'danger')
+  assert.equal(classifyReading({ noise: 0 }).metrics.noise.level, 'normal')
+})
+
+test('snapshot and realtime overlap deduplicates, sorts and isolates the selected station', () => {
+  const row = (id, device_id, second) => ({ id, device_id, recorded_at: new Date(second * 1000).toISOString() })
+  const rows = mergeReadings([row('2', 'A', 2), row('1', 'A', 1)], [row('2', 'A', 2), row('3', 'B', 3), row('4', 'A', 4)], 'A')
+  assert.deepEqual(rows.map(item => item.id), ['1', '2', '4'])
+  assert.equal(mergeReadings([], Array.from({ length: 80 }, (_, i) => row(String(i), 'A', i)), 'A').length, 60)
+})
+
+test('freshness uses one boundary and rejects invalid or future timestamps', () => {
+  const now = 100000
+  for (const age of [0, 29999]) assert.equal(isFreshReading({ recorded_at: new Date(now - age).toISOString() }, now), true)
+  for (const date of ['bad', new Date(now - 30000).toISOString(), new Date(now + 1).toISOString()]) assert.equal(isFreshReading({ recorded_at: date }, now), false)
 })
 
 test('trends require two real measurements and do not turn null into zero', () => {

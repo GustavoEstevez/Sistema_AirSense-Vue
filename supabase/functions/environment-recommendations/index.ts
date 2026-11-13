@@ -109,6 +109,7 @@ Deno.serve(async (request) => {
     const prompt = [
       'Sos un asistente de bienestar ambiental para interiores. Respondé en español rioplatense claro.',
       'Generá de 2 a 4 acciones breves, concretas y prudentes basadas solamente en estas mediciones.',
+      'En las recomendaciones mencioná solamente las variables ambientales y sus mediciones; no incluyas nombres, marcas ni modelos de sensores o componentes.',
       'No diagnostiques enfermedades, no inventes el clima actual y no afirmes que el MQ-135 mide CO2: describilo como calidad del aire estimada en ppm.',
       'Si la región aporta contexto climático general, usalo con cautela y aclarando cualquier supuesto.',
       `Ubicación resuelta por el proveedor meteorológico: ${weather.location}.`,

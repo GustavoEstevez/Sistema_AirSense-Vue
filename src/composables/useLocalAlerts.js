@@ -1,6 +1,7 @@
 import { reactive, ref, unref, watch } from 'vue'
 import { Capacitor } from '@capacitor/core'
 import { LocalNotifications } from '@capacitor/local-notifications'
+import { isMeasurement } from '../lib/dashboardPresentation'
 import { supabase } from '../lib/supabase'
 
 const STORAGE_KEY = 'airsense.android-alert-settings.v1'
@@ -43,10 +44,14 @@ let primed = false
 let wasCritical = false
 let smartRefreshPromise = null
 let lastSmartAttempt = 0
+let contextVersion = 0
 
 function activateDevice(deviceId) {
   const nextId = deviceId || 'default'
   if (nextId === activeDeviceId) return
+  ++contextVersion
+  smartRefreshPromise = null
+  lastSmartAttempt = 0
   activeDeviceId = nextId
   Object.assign(settings, loadSettings(nextId))
   primed = false
@@ -56,7 +61,7 @@ function activateDevice(deviceId) {
 
 function finite(value) {
   const number = Number(value)
-  return Number.isFinite(number) ? number : null
+  return isMeasurement(value) ? number : null
 }
 
 function findBreaches(reading = {}) {
@@ -95,7 +100,10 @@ async function refreshSmartThresholds(force = true) {
   if (smartRefreshPromise) return smartRefreshPromise
   if (!force && Date.now() - lastSmartAttempt < 15 * 60 * 1000) return
   lastSmartAttempt = Date.now()
-  smartRefreshPromise = (async () => {
+  const context = contextVersion
+  const regionContext = localStorage.getItem('airsense.installation-region') || 'Buenos Aires, Argentina'
+  const current = () => context === contextVersion && settings.smartEnabled && regionContext === (localStorage.getItem('airsense.installation-region') || 'Buenos Aires, Argentina')
+  const pending = (async () => {
     feedback.value = 'Consultando el clima de la región…'
     try {
       const region = localStorage.getItem('airsense.installation-region') || 'Buenos Aires, Argentina'
@@ -107,6 +115,7 @@ async function refreshSmartThresholds(force = true) {
           thresholds: { temperatureMin: settings.temperatureMin, temperatureMax: settings.temperatureMax },
         },
       })
+      if (!current()) return
       if (error) throw error
       settings.smartTemperatureMin = Number(data.thresholds.temperatureMin)
       settings.smartTemperatureMax = Number(data.thresholds.temperatureMax)
@@ -115,13 +124,14 @@ async function refreshSmartThresholds(force = true) {
       saveSettings()
       feedback.value = `Umbrales inteligentes actualizados: ${settings.smartTemperatureMin}–${settings.smartTemperatureMax} °C.`
     } catch (error) {
-      feedback.value = error?.message || 'No pudimos actualizar los umbrales con el clima actual.'
+      if (current()) feedback.value = error?.message || 'No pudimos actualizar los umbrales con el clima actual.'
     }
   })()
+  smartRefreshPromise = pending
   try {
-    await smartRefreshPromise
+    await pending
   } finally {
-    smartRefreshPromise = null
+    if (smartRefreshPromise === pending) smartRefreshPromise = null
   }
 }
 
@@ -132,6 +142,8 @@ async function enableSmartThresholds() {
 }
 
 function disableSmartThresholds() {
+  ++contextVersion
+  smartRefreshPromise = null
   settings.smartEnabled = false
   saveSettings()
   feedback.value = 'Umbrales inteligentes desactivados. Se usarán los valores manuales.'
@@ -200,7 +212,10 @@ async function sendTestNotification() {
 
 async function processReading(reading) {
   if (!reading) return
+  const context = contextVersion
+  if (reading.device_id !== activeDeviceId) return
   if (settings.smartEnabled) await refreshSmartThresholds(false)
+  if (context !== contextVersion || reading.device_id !== activeDeviceId) return
   const breaches = findBreaches(reading)
   const critical = breaches.length > 0
 
