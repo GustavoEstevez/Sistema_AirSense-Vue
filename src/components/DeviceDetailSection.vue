@@ -80,9 +80,12 @@ function changeFeature(direction) {
 <template>
   <section class="device-detail" aria-labelledby="device-detail-heading">
     <div class="device-detail-inner">
-      <p class="device-detail-eyebrow">CONOCÉ AIRSENSE</p>
-      <h2 id="device-detail-heading">Todo tu entorno. En un solo dispositivo.</h2>
-      <div class="device-detail-stage" :class="{ 'has-photo-background': hasPhotoBackground }">
+      <p class="device-detail-eyebrow" data-entrance>CONOCÉ AIRSENSE</p>
+      <h2 id="device-detail-heading" data-entrance="60">Todo tu entorno. En un solo dispositivo.</h2>
+      <div class="device-detail-stage" data-entrance="120" :class="{ 'has-photo-background': hasPhotoBackground }">
+        <button v-if="activeFeature" type="button" class="device-detail-close" aria-label="Cerrar sección y volver al dispositivo principal" @click="selectFeature(null)">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M6 18 18 6" /></svg>
+        </button>
         <Transition name="device-photo">
           <img v-if="photo" :key="photo.src" class="device-background-photo" :src="photo.src" :alt="photo.alt" :width="photo.width" :height="photo.height" decoding="async" />
         </Transition>
@@ -124,6 +127,10 @@ function changeFeature(direction) {
 .device-detail h2 { margin: 0 0 clamp(32px, 4vw, 56px); font-family: var(--font-display); font-size: clamp(2.3rem, 4.8vw, 4.5rem); font-weight: 600; letter-spacing: -.045em; line-height: 1.08; }
 .device-detail-stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: center; justify-items: center; aspect-ratio: 16 / 9; min-height: 640px; gap: clamp(24px, 4vw, 56px); padding: clamp(24px, 3vw, 44px); border-radius: 32px; position: relative; isolation: isolate; border: 1px solid rgba(255,255,255,.85); background: linear-gradient(135deg, rgba(255,255,255,.72), rgba(235,248,252,.4)); box-shadow: inset 0 1px 1px rgba(255,255,255,.95), inset 0 -1px 1px rgba(255,255,255,.6), 0 24px 64px rgba(10,76,96,.1); -webkit-backdrop-filter: blur(24px) saturate(1.5); backdrop-filter: blur(24px) saturate(1.5); overflow: hidden; }
 .device-detail-features { position: relative; z-index: 1; justify-self: start; width: 100%; max-width: 400px; text-align: center; }
+.device-detail-close { position: absolute; top: 16px; right: 16px; z-index: 2; display: grid; place-items: center; width: 44px; height: 44px; padding: 10px; border: 1px solid var(--glass-edge); border-radius: 50%; background: var(--glass-surface); box-shadow: var(--glass-shadow); color: var(--c-navy); cursor: pointer; -webkit-backdrop-filter: var(--glass-filter); backdrop-filter: var(--glass-filter); }
+.device-detail-close svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; }
+.device-detail-close:focus-visible { outline: 3px solid var(--c-teal); outline-offset: 3px; }
+@media (hover: hover) { .device-detail-close:hover { background: var(--glass-hover); color: var(--c-teal); } }
 .device-detail-hint { max-width: 32ch; margin: 0 auto 20px; color: var(--muted); font-size: 1.05rem; line-height: 1.5; }
 .device-feature { width: fit-content; max-width: 100%; margin-bottom: 12px; border: 1px solid var(--glass-edge); border-radius: 27px; background: var(--glass-surface); box-shadow: var(--glass-shadow); transition: background-color .25s ease, box-shadow .25s ease, transform .25s ease; -webkit-backdrop-filter: blur(16px) saturate(1.4); backdrop-filter: blur(16px) saturate(1.4); }
 .device-feature-heading { width: 100%; border: 0; background: transparent; border-radius: 27px; display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: center; gap: 12px; min-height: 54px; padding: 14px 20px; text-align: left; color: inherit; cursor: pointer; font-size: .95rem; font-weight: 600; line-height: 1.4; }
@@ -146,13 +153,13 @@ function changeFeature(direction) {
 .device-detail-image img { display: block; width: 100%; max-width: 500px; height: clamp(380px, 39vw, 590px); object-fit: contain; margin: auto; filter: drop-shadow(3px 5px 4px rgba(0,0,0,.14)); }
 .device-feature-heading:focus-visible { outline: 3px solid var(--c-teal); outline-offset: 4px; border-radius: 26px; }
 @media (hover: hover) { .device-feature:hover { background-color: rgba(255,255,255,.38); box-shadow: inset 0 1px 1px #fff, 0 10px 26px rgba(10,76,96,.12); transform: translateY(-2px); } .device-feature:hover { color: var(--teal-deep); } }
-@media (max-width: 760px) {
+@media (max-width: 900px) {
   .device-detail-inner { width: calc(100% - 32px); }
   .device-detail-stage { grid-template-columns: 1fr; aspect-ratio: auto; min-height: 0; padding: 28px 22px; border-radius: 24px; }
   .device-detail-image { grid-column: 1; grid-row: 1; }
   .device-detail-image img { width: min(100%, 360px); height: auto; }
   .device-detail-features { max-width: 100%; }
-  .device-feature-list { min-height: 540px; }
+  .device-feature-list { min-height: 400px; }
   .device-detail-hint { max-width: 100%; }
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .device-feature { background: var(--ice-soft); } .device-detail-stage { background: var(--ice-tint); } }
@@ -186,10 +193,15 @@ function changeFeature(direction) {
 .device-photo-enter-from { opacity: 0; transform: scale(1.025); }
 .device-photo-enter-to { opacity: 1; transform: scale(1) translateX(0); }
 .device-photo-leave-to { opacity: 0; transform: scale(1.01); }
-@media (max-width: 760px) {
-  .device-detail-image { height: 400px; min-height: 0; }
+@media (max-width: 900px) {
+  .device-detail-image { height: clamp(240px, 65vw, 400px); min-height: 0; }
   .device-detail-image img { height: 100%; object-fit: contain; }
   .device-detail-features { justify-self: center; max-width: 100%; }
+}
+@media (max-width: 400px) {
+  .device-feature-switcher { gap: 8px; }
+  .device-feature-heading { gap: 8px; padding-inline: 14px; font-size: .875rem; }
+  .device-feature-body p { padding-inline: 14px; }
 }
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .has-photo-background :is(.device-feature, .device-detail-hint, .device-feature-navigation button) { background: var(--ice-soft); }

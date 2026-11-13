@@ -13,7 +13,8 @@ const router = createRouter({
   },
   routes: [
     { path: '/', name: 'producto', component: ProductView, meta: { title: 'Inicio' } },
-    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard', requiresAuth: true } },
+    // Acceso público temporal: restaurar requiresAuth: true para exigir una cuenta.
+    { path: '/dashboard/', name: 'dashboard', component: () => import('./views/DashboardView.vue'), meta: { title: 'Dashboard', requiresAuth: false } },
     { path: '/cuenta/ingresar/', name: 'ingresar', component: () => import('./views/AuthView.vue'), meta: { title: 'Iniciar sesión', guestOnly: true } },
     { path: '/cuenta/registro/', name: 'registro', component: () => import('./views/AuthView.vue'), meta: { title: 'Crear cuenta', guestOnly: true } },
     { path: '/cuenta/recuperar/', name: 'recuperar', component: () => import('./views/AuthView.vue'), meta: { title: 'Recuperar contraseña' } },
@@ -30,7 +31,7 @@ router.beforeEach(async (to) => {
   const auth = useAuth()
   const nativeApp = Capacitor.isNativePlatform()
   if (nativeApp && to.name === 'producto') {
-    return { name: auth.isAuthenticated.value ? 'dashboard' : 'ingresar' }
+    return { name: 'dashboard' }
   }
   if (to.meta.requiresAuth && !auth.isAuthenticated.value) {
     return { name: 'ingresar', query: { redirect: to.fullPath } }

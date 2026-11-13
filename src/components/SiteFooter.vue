@@ -15,14 +15,14 @@ const groups = [
 <template>
   <footer class="airsense-footer">
     <div class="footer-content">
-      <div class="footer-intro">
+      <div class="footer-intro" data-entrance>
         <RouterLink to="/" class="footer-wordmark" aria-label="AirSense, inicio">
           <img src="/assets/Logos/LogoAirSense.png" alt="" width="44" height="44" />
-          <span class="footer-brand-name">Air<span>Sense</span></span>
+          <span class="footer-brand-name">AirSense</span>
         </RouterLink>
         <p>Sistema de Monitoreo Ambiental Inteligente</p>
       </div>
-      <nav class="footer-directory" aria-label="Navegación al pie de página">
+      <nav class="footer-directory" data-entrance="80" aria-label="Navegación al pie de página">
         <div v-for="group in groups" :key="group.title" class="footer-column">
           <h2>{{ group.title }}</h2>
           <ul>
@@ -38,7 +38,7 @@ const groups = [
           <p class="footer-location">Buenos Aires, Argentina</p>
         </div>
       </nav>
-      <div class="footer-copyright">
+      <div class="footer-copyright" data-entrance="120">
         <p>© {{ new Date().getFullYear() }} AirSense. Todos los derechos reservados.</p>
       </div>
     </div>
@@ -51,7 +51,6 @@ const groups = [
 .footer-intro { display: flex; align-items: center; gap: 24px; padding-bottom: 24px; border-bottom: 1px solid rgba(10,76,96,.14); }
 .footer-wordmark { display: inline-flex; align-items: center; gap: 8px; flex-shrink: 0; color: var(--c-navy); font-family: var(--font-display); font-size: 21px; font-weight: 600; letter-spacing: -.8px; }
 .footer-wordmark img { width: 44px; height: 44px; object-fit: contain; }
-.footer-brand-name > span { color: var(--c-teal); }
 .footer-intro p { margin: 0; }
 .footer-directory { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; padding: 28px 0 32px; }
 .footer-column h2 { margin: 0 0 12px; color: #273b43; font-family: inherit; font-size: 12px; font-weight: 600; letter-spacing: 0; line-height: 1.5; }

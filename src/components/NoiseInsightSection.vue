@@ -19,7 +19,7 @@ function count() {
   counted = true
   const start = performance.now()
   function tick(now) {
-    const progress = Math.min((now - start) / 1600, 1)
+    const progress = Math.min((now - start) / 1100, 1)
     percentage.value = format.format(72.7 * (1 - (1 - progress) ** 3))
     if (progress < 1) frame = requestAnimationFrame(tick)
   }

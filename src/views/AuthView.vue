@@ -80,7 +80,7 @@ async function submit() {
 <template>
   <div class="auth-page page-grid-bg">
     <section class="auth-card panel">
-      <RouterLink to="/" class="auth-brand">Air<span>Sense</span>™</RouterLink>
+      <RouterLink to="/" class="auth-brand">AirSense™</RouterLink>
       <span class="section-kicker">ACCESO SEGURO</span>
       <h1>{{ title }}</h1>
       <p v-if="route.query.redirect === '/dashboard/' && mode !== 'recovery'" class="form-notice">Para acceder al dashboard, iniciá sesión o creá una cuenta.</p>

@@ -40,7 +40,7 @@ async function verify() {
 <template>
   <div class="auth-page page-grid-bg">
     <section class="auth-card panel">
-      <span class="auth-brand">Air<span>Sense</span>™</span>
+      <span class="auth-brand">AirSense™</span>
       <span class="section-kicker">VERIFICACIÓN DE SEGURIDAD</span>
       <h1>Código de autenticación</h1>
       <p class="auth-lead">Abrí tu aplicación autenticadora e ingresá el código temporal para completar el inicio de sesión.</p>
